@@ -334,6 +334,48 @@ export type Database = {
           },
         ]
       }
+      customer_payment_methods: {
+        Row: {
+          brand: string
+          cardholder_name: string | null
+          created_at: string
+          customer_id: string
+          exp_month: number
+          exp_year: number
+          id: string
+          is_default: boolean
+          last4: string
+          moyasar_token_id: string
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          cardholder_name?: string | null
+          created_at?: string
+          customer_id: string
+          exp_month: number
+          exp_year: number
+          id?: string
+          is_default?: boolean
+          last4: string
+          moyasar_token_id: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          cardholder_name?: string | null
+          created_at?: string
+          customer_id?: string
+          exp_month?: number
+          exp_year?: number
+          id?: string
+          is_default?: boolean
+          last4?: string
+          moyasar_token_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_types: {
         Row: {
           applies_to: Database["public"]["Enums"]["document_entity_type"]
@@ -878,11 +920,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          authorized_at: string | null
           branch_id: string
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           cancelled_by_role: string | null
+          captured_at: string | null
           city_id: string
           cooling_off_expires_at: string | null
           created_at: string
@@ -896,26 +940,36 @@ export type Database = {
           discount_halalas: number
           estimated_delivery_time_minutes: number
           estimated_prep_time_minutes: number
+          free_cancellation_until: string | null
           id: string
           idempotency_key: string | null
           items_total_halalas: number
           order_number: string
           order_snapshot: Json
           out_of_stock_action: string
+          payment_brand: string | null
+          payment_gateway_ref: string | null
+          payment_last4: string | null
+          payment_method_id: string | null
+          payment_status: string
           pickup_code: string | null
+          refunded_at: string | null
           service_fee_halalas: number
           status: string
           store_id: string
           tip_halalas: number
           total_halalas: number
           updated_at: string
+          voided_at: string | null
         }
         Insert: {
+          authorized_at?: string | null
           branch_id: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           cancelled_by_role?: string | null
+          captured_at?: string | null
           city_id: string
           cooling_off_expires_at?: string | null
           created_at?: string
@@ -929,26 +983,36 @@ export type Database = {
           discount_halalas?: number
           estimated_delivery_time_minutes?: number
           estimated_prep_time_minutes?: number
+          free_cancellation_until?: string | null
           id?: string
           idempotency_key?: string | null
           items_total_halalas: number
           order_number?: string
           order_snapshot: Json
           out_of_stock_action?: string
+          payment_brand?: string | null
+          payment_gateway_ref?: string | null
+          payment_last4?: string | null
+          payment_method_id?: string | null
+          payment_status?: string
           pickup_code?: string | null
+          refunded_at?: string | null
           service_fee_halalas?: number
           status?: string
           store_id: string
           tip_halalas?: number
           total_halalas: number
           updated_at?: string
+          voided_at?: string | null
         }
         Update: {
+          authorized_at?: string | null
           branch_id?: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           cancelled_by_role?: string | null
+          captured_at?: string | null
           city_id?: string
           cooling_off_expires_at?: string | null
           created_at?: string
@@ -962,19 +1026,27 @@ export type Database = {
           discount_halalas?: number
           estimated_delivery_time_minutes?: number
           estimated_prep_time_minutes?: number
+          free_cancellation_until?: string | null
           id?: string
           idempotency_key?: string | null
           items_total_halalas?: number
           order_number?: string
           order_snapshot?: Json
           out_of_stock_action?: string
+          payment_brand?: string | null
+          payment_gateway_ref?: string | null
+          payment_last4?: string | null
+          payment_method_id?: string | null
+          payment_status?: string
           pickup_code?: string | null
+          refunded_at?: string | null
           service_fee_halalas?: number
           status?: string
           store_id?: string
           tip_halalas?: number
           total_halalas?: number
           updated_at?: string
+          voided_at?: string | null
         }
         Relationships: [
           {
@@ -1013,6 +1085,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "customer_payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -1044,6 +1123,68 @@ export type Database = {
           phone?: string
         }
         Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount_halalas: number
+          created_at: string
+          customer_id: string
+          error_code: string | null
+          error_message: string | null
+          gateway: string
+          gateway_reference: string | null
+          gateway_status: string | null
+          id: string
+          metadata: Json
+          order_id: string
+          payment_method_brand: string | null
+          payment_method_last4: string | null
+          status: string
+          transaction_type: string
+        }
+        Insert: {
+          amount_halalas: number
+          created_at?: string
+          customer_id: string
+          error_code?: string | null
+          error_message?: string | null
+          gateway?: string
+          gateway_reference?: string | null
+          gateway_status?: string | null
+          id?: string
+          metadata?: Json
+          order_id: string
+          payment_method_brand?: string | null
+          payment_method_last4?: string | null
+          status: string
+          transaction_type: string
+        }
+        Update: {
+          amount_halalas?: number
+          created_at?: string
+          customer_id?: string
+          error_code?: string | null
+          error_message?: string | null
+          gateway?: string
+          gateway_reference?: string | null
+          gateway_status?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string
+          payment_method_brand?: string | null
+          payment_method_last4?: string | null
+          status?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1779,6 +1920,10 @@ export type Database = {
         }
         Returns: number
       }
+      can_user_manage_store_orders: {
+        Args: { p_branch_id: string; p_store_id: string }
+        Returns: boolean
+      }
       cancel_customer_order: {
         Args: { p_order_id: string; p_reason: string }
         Returns: Json
@@ -1826,6 +1971,10 @@ export type Database = {
         Returns: Json
       }
       customer_menu: { Args: { p_store_id: string }; Returns: Json }
+      delete_customer_payment_method: {
+        Args: { p_payment_method_id: string }
+        Returns: boolean
+      }
       estimate_delivery_time: {
         Args: {
           p_city_id: string
@@ -1889,6 +2038,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_aal2: { Args: { _user_id: string }; Returns: boolean }
+      is_merchant_user_of: { Args: { p_merchant_id: string }; Returns: boolean }
       quote_cart: {
         Args: {
           p_device_lat?: number
@@ -1900,6 +2050,18 @@ export type Database = {
         }
         Returns: Json
       }
+      record_order_payment_authorization: {
+        Args: {
+          p_amount_halalas: number
+          p_brand: string
+          p_gateway_reference: string
+          p_last4: string
+          p_metadata?: Json
+          p_order_id: string
+          p_payment_method_id?: string
+        }
+        Returns: Json
+      }
       review_menu_change_request: {
         Args: {
           p_action: string
@@ -1907,6 +2069,18 @@ export type Database = {
           p_request_id: string
         }
         Returns: Json
+      }
+      save_customer_payment_method: {
+        Args: {
+          p_brand: string
+          p_cardholder_name?: string
+          p_exp_month: number
+          p_exp_year: number
+          p_is_default?: boolean
+          p_last4: string
+          p_moyasar_token_id: string
+        }
+        Returns: string
       }
       stores_for_point: {
         Args: {
@@ -1980,11 +2154,13 @@ export type Database = {
           p_reason?: string
         }
         Returns: {
+          authorized_at: string | null
           branch_id: string
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           cancelled_by_role: string | null
+          captured_at: string | null
           city_id: string
           cooling_off_expires_at: string | null
           created_at: string
@@ -1998,19 +2174,27 @@ export type Database = {
           discount_halalas: number
           estimated_delivery_time_minutes: number
           estimated_prep_time_minutes: number
+          free_cancellation_until: string | null
           id: string
           idempotency_key: string | null
           items_total_halalas: number
           order_number: string
           order_snapshot: Json
           out_of_stock_action: string
+          payment_brand: string | null
+          payment_gateway_ref: string | null
+          payment_last4: string | null
+          payment_method_id: string | null
+          payment_status: string
           pickup_code: string | null
+          refunded_at: string | null
           service_fee_halalas: number
           status: string
           store_id: string
           tip_halalas: number
           total_halalas: number
           updated_at: string
+          voided_at: string | null
         }
         SetofOptions: {
           from: "*"

@@ -255,6 +255,44 @@ export default function ProfileScreen() {
           </Card>
         )}
 
+        {/* بطاقة البطاقات وطرق الدفع (PAY-023) */}
+        {!isGuest && (
+          <Card style={styles.sectionCard}>
+            <TouchableOpacity
+              style={[
+                styles.settingRow,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+              onPress={() => router.push("/cards")}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.settingLabelGroup,
+                  { flexDirection: isRTL ? "row-reverse" : "row" },
+                ]}
+              >
+                <Ionicons name="card-outline" size={22} color="#0284C7" />
+                <View>
+                  <Text style={styles.settingLabel}>
+                    {lang === "ar" ? "البطاقات وطرق الدفع" : "Cards & Payments"}
+                  </Text>
+                  <Text style={styles.settingSublabel}>
+                    {lang === "ar"
+                      ? "إدارة بطاقات مدى والبطاقات الائتمانية المحفوظة"
+                      : "Manage saved mada and credit cards"}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name={isRTL ? "chevron-back" : "chevron-forward"}
+                size={20}
+                color="#94A3B8"
+              />
+            </TouchableOpacity>
+          </Card>
+        )}
+
         {/* بطاقة موافقة التسويق (CUS-001, REG-004) */}
         {!isGuest && (
           <Card style={styles.sectionCard}>

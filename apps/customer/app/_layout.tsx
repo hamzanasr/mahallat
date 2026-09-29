@@ -70,6 +70,20 @@ export default function RootLayout() {
                     headerShown: false,
                   }}
                 />
+                <Stack.Screen
+                  name="cards"
+                  options={{
+                    presentation: "card",
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="order/[id]"
+                  options={{
+                    presentation: "card",
+                    headerShown: false,
+                  }}
+                />
               </Stack>
             </CartProvider>
           </AddressProvider>

@@ -50,6 +50,13 @@ interface OrderDetail {
   order_snapshot: any;
   delivery_address_snapshot: any;
   cooling_off_expires_at: string | null;
+  payment_status: string;
+  payment_brand: string | null;
+  payment_last4: string | null;
+  authorized_at: string | null;
+  free_cancellation_until: string | null;
+  captured_at: string | null;
+  voided_at: string | null;
   estimated_prep_time_minutes: number;
   estimated_delivery_time_minutes: number;
   created_at: string;
@@ -65,6 +72,25 @@ export default function OrderDetailsScreen() {
   const [history, setHistory] = useState<StatusHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // عداد الـ 60 ثانية للتراجع المجاني (ORD-002)
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
+
+  useEffect(() => {
+    if (!order?.free_cancellation_until || order.status === "cancelled" || order.payment_status === "voided") {
+      setSecondsRemaining(0);
+      return;
+    }
+    const target = new Date(order.free_cancellation_until).getTime();
+    const updateCountdown = () => {
+      const now = Date.now();
+      const diff = Math.max(0, Math.ceil((target - now) / 1000));
+      setSecondsRemaining(diff);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [order?.free_cancellation_until, order?.status, order?.payment_status]);
 
   // حالة مودال الإلغاء
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
@@ -299,7 +325,15 @@ export default function OrderDetailsScreen() {
   const addressSnapshot = order.delivery_address_snapshot || {};
 
   // هل يقدر العميل يلغي الطلب بنفسه؟ (ORD-004: فقط قبل جاري التجهيز)
-  const isCancellableByCustomer = ["pending_payment", "cooling_off", "pending_driver"].includes(order.status);
+  const isCancellableByCustomer = [
+    "pending_payment",
+    "created",
+    "scheduled",
+    "accepted_by_driver",
+    "driver_heading_to_store",
+    "cooling_off",
+    "pending_driver",
+  ].includes(order.status);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -328,6 +362,39 @@ export default function OrderDetailsScreen() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* شريط مهلة التراجع المجاني (ORD-002: 60 ثانية) */}
+        {secondsRemaining > 0 && order.status !== "cancelled" && (
+          <View style={styles.coolingOffCard}>
+            <View style={[styles.coolingOffHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <View style={styles.timerBadge}>
+                <Ionicons name="timer-outline" size={18} color="#D97706" />
+                <Text style={styles.timerBadgeText}>
+                  {secondsRemaining} {lang === "ar" ? "ثانية متبقية" : "s remaining"}
+                </Text>
+              </View>
+              <Text style={styles.coolingOffTitle}>
+                {lang === "ar" ? "مهلة التراجع المجاني" : "Free Cancellation"}
+              </Text>
+            </View>
+            <Text style={[styles.coolingOffDesc, { textAlign: isRTL ? "right" : "left" }]}>
+              {lang === "ar"
+                ? "المبلغ محجوز فقط على بطاقتك. يمكنك إلغاء الطلب الآن بضغطة واحدة وسيتم فك الحجز فوراً دون أي رسوم."
+                : "Funds are only on hold. You can cancel now with one tap to void authorization with zero fees."}
+            </Text>
+            <TouchableOpacity
+              style={styles.quickCancelBtn}
+              onPress={() => {
+                setCancelReason(lang === "ar" ? "تراجع خلال مهلة الـ 60 ثانية" : "Cancelled within 60s window");
+                setCancelModalVisible(true);
+              }}
+            >
+              <Text style={styles.quickCancelBtnText}>
+                {lang === "ar" ? "تراجع عن الطلب (مجاناً)" : "Cancel Order (Free)"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* بطاقة الحالة الحالية */}
         <View style={[styles.statusCard, { backgroundColor: badge.bg, borderColor: badge.color + "40" }]}>
           <View style={[styles.statusHeaderRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
@@ -355,6 +422,65 @@ export default function OrderDetailsScreen() {
               <Text style={styles.codeDigits}>{order.delivery_code}</Text>
             </View>
           )}
+        </View>
+
+        {/* تفاصيل الدفع والبطاقة (PAY-001, PAY-023) */}
+        <View style={styles.card}>
+          <View style={[styles.cardHeaderRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Ionicons name="card-outline" size={18} color="#2563EB" />
+            <Text style={styles.cardSectionTitle}>
+              {lang === "ar" ? "بيانات الدفع الإلكتروني (ميسر)" : "Payment Information (Moyasar)"}
+            </Text>
+          </View>
+          <View style={[styles.paymentRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Text style={styles.paymentRowLabel}>
+              {lang === "ar" ? "وسيلة الدفع:" : "Payment Method:"}
+            </Text>
+            <Text style={styles.paymentRowValue}>
+              {order.payment_brand ? order.payment_brand.toUpperCase() : "مدى mada"} •••• {order.payment_last4 || "0001"}
+            </Text>
+          </View>
+          <View style={[styles.paymentRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Text style={styles.paymentRowLabel}>
+              {lang === "ar" ? "حالة الدفع:" : "Payment Status:"}
+            </Text>
+            <View
+              style={[
+                styles.paymentStatusBadge,
+                order.payment_status === "authorized" && { backgroundColor: "#FEF3C7" },
+                order.payment_status === "captured" && { backgroundColor: "#DCFCE7" },
+                order.payment_status === "voided" && { backgroundColor: "#F1F5F9" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.paymentStatusBadgeText,
+                  order.payment_status === "authorized" && { color: "#D97706" },
+                  order.payment_status === "captured" && { color: "#16A34A" },
+                  order.payment_status === "voided" && { color: "#64748B" },
+                ]}
+              >
+                {order.payment_status === "authorized"
+                  ? lang === "ar" ? "محجوز بنكياً (لم يُحصَّل بعد)" : "Authorized (Hold)"
+                  : order.payment_status === "captured"
+                  ? lang === "ar" ? "تم التحصيل" : "Captured"
+                  : order.payment_status === "voided"
+                  ? lang === "ar" ? "تم فك الحجز بالكامل" : "Voided / Released"
+                  : order.payment_status}
+              </Text>
+            </View>
+          </View>
+          <Text style={[styles.paymentSubtext, { textAlign: isRTL ? "right" : "left" }]}>
+            {order.payment_status === "authorized"
+              ? lang === "ar"
+                ? "المبلغ محجوز على بطاقتك فقط، ولن يُخصم نهائياً إلا بعد استلام الطلب بالرمز السري."
+                : "Funds are temporarily on hold; only captured upon PIN verification."
+              : order.payment_status === "voided"
+              ? lang === "ar"
+                ? "تم فك الحجز عن بطاقتك بنجاح وأمان."
+                : "Authorization has been successfully voided."
+              : ""}
+          </Text>
         </View>
 
         {/* المتجر والفرع */}
@@ -1095,4 +1221,86 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
+  coolingOffCard: {
+    backgroundColor: "#FFFBEB",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: "#FDE68A",
+  },
+  coolingOffHeader: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  coolingOffTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#92400E",
+  },
+  timerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+  },
+  timerBadgeText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#B45309",
+  },
+  coolingOffDesc: {
+    fontSize: 12,
+    color: "#78350F",
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  quickCancelBtn: {
+    backgroundColor: "#DC2626",
+    borderRadius: 10,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quickCancelBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  paymentRow: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  paymentRowLabel: {
+    fontSize: 13,
+    color: "#64748B",
+  },
+  paymentRowValue: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+  paymentStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  paymentStatusBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  paymentSubtext: {
+    fontSize: 11,
+    color: "#64748B",
+    marginTop: 4,
+    lineHeight: 16,
+  },
 });
+

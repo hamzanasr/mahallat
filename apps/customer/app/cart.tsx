@@ -63,6 +63,34 @@ export default function CartScreen() {
   const [customizingItem, setCustomizingItem] = useState<MenuItemData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  // وسائل الدفع المحفوظة واختيار طريقة الدفع (PAY-001, PAY-023)
+  const [paymentMethods, setPaymentMethods] = useState<
+    Array<{ id: string; brand: string; last4: string; is_default: boolean }>
+  >([]);
+  const [selectedMethodId, setSelectedMethodId] = useState<string>("new_card");
+
+  React.useEffect(() => {
+    if (!user) return;
+    const loadPaymentMethods = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("customer_payment_methods")
+          .select("id, brand, last4, is_default")
+          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          setPaymentMethods(data);
+          const def = data.find((d) => d.is_default) || data[0];
+          setSelectedMethodId(def.id);
+        }
+      } catch (e) {
+        console.error("خطأ تحميل وسائل الدفع بالسلة:", e);
+      }
+    };
+    loadPaymentMethods();
+  }, [user]);
+
   const handleClearCart = () => {
     Alert.alert(
       lang === "ar" ? "تفريغ السلة" : "Clear Cart",
@@ -221,7 +249,44 @@ export default function CartScreen() {
         return;
       }
 
-      // نجاح إنشاء الطلب! تفريغ السلة والانتقال لصفحة متابعة الطلب
+      // حجز وتفويض المبلغ عبر ميسر (PAY-001, ORD-002)
+      let brand = "mada";
+      let last4 = "0001";
+      let pMethodId: string | null = null;
+
+      if (selectedMethodId !== "new_card" && selectedMethodId !== "applepay") {
+        const found = paymentMethods.find((m) => m.id === selectedMethodId);
+        if (found) {
+          brand = found.brand;
+          last4 = found.last4;
+          pMethodId = found.id;
+        }
+      } else if (selectedMethodId === "applepay") {
+        brand = "applepay";
+        last4 = "8888";
+      }
+
+      const mockGatewayRef = `pay_moyasar_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      const { error: authErr } = await supabase.rpc("record_order_payment_authorization", {
+        p_order_id: result.order_id,
+        p_gateway_reference: mockGatewayRef,
+        p_amount_halalas: quote.total_halalas,
+        p_brand: brand,
+        p_last4: last4,
+        p_payment_method_id: pMethodId || undefined,
+        p_metadata: { source: selectedMethodId, idempotency_key: idempotencyKey } as any,
+      });
+
+      if (authErr) {
+        Alert.alert(
+          lang === "ar" ? "تعذر تفويض الدفع" : "Payment Authorization Failed",
+          authErr.message
+        );
+        return;
+      }
+
+      // نجاح إنشاء الطلب وتفويض المبلغ! تفريغ السلة والانتقال لصفحة متابعة الطلب
       clearCart();
       router.replace({
         pathname: "/order/[id]",
@@ -554,6 +619,100 @@ export default function CartScreen() {
             </ScrollView>
           </View>
         )}
+
+        {/* اختيار وسيلة الدفع (PAY-001, PAY-023) */}
+        <View style={styles.card}>
+          <View style={[styles.cardHeaderWithLink, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Text style={styles.cardTitle}>
+              {lang === "ar" ? "طريقة الدفع (ميسر)" : "Payment Method (Moyasar)"}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/cards")}>
+              <Text style={styles.manageCardsLink}>
+                {lang === "ar" ? "إدارة البطاقات" : "Manage Cards"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.paymentNoticeBox, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Ionicons name="shield-checkmark" size={16} color="#059669" />
+            <Text style={[styles.paymentNoticeText, { textAlign: isRTL ? "right" : "left" }]}>
+              {lang === "ar"
+                ? "يتم حجز المبلغ مؤقتاً على بطاقتك ولا يُحصَّل إلا بعد استلام الطلب بالرمز السري. متاح 60 ثانية للتراجع المجاني."
+                : "Funds are temporarily authorized on your card and only captured upon delivery. 60s free cancellation."}
+            </Text>
+          </View>
+
+          {/* البطاقات المحفوظة إن وُجدت */}
+          {paymentMethods.map((m) => {
+            const isSelected = selectedMethodId === m.id;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[
+                  styles.paymentOptionItem,
+                  isSelected && styles.paymentOptionItemActive,
+                  { flexDirection: isRTL ? "row-reverse" : "row" },
+                ]}
+                onPress={() => setSelectedMethodId(m.id)}
+              >
+                <Ionicons
+                  name={m.brand === "applepay" ? "logo-apple" : "card"}
+                  size={20}
+                  color={isSelected ? "#2563EB" : "#64748B"}
+                />
+                <Text style={styles.paymentOptionLabel}>
+                  {m.brand.toUpperCase()} •••• {m.last4}{" "}
+                  {m.is_default ? (lang === "ar" ? "(افتراضية)" : "(Default)") : ""}
+                </Text>
+                <View style={[styles.radioCircle, isSelected && styles.radioCircleActive]}>
+                  {isSelected && <View style={styles.radioDot} />}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* خيار بطاقة تجريبية جديدة */}
+          <TouchableOpacity
+            style={[
+              styles.paymentOptionItem,
+              selectedMethodId === "new_card" && styles.paymentOptionItemActive,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+            onPress={() => setSelectedMethodId("new_card")}
+          >
+            <Ionicons
+              name="card-outline"
+              size={20}
+              color={selectedMethodId === "new_card" ? "#2563EB" : "#64748B"}
+            />
+            <Text style={styles.paymentOptionLabel}>
+              {lang === "ar" ? "بطاقة جديدة (مدى / فيزا)" : "New Card (mada / Visa)"}
+            </Text>
+            <View style={[styles.radioCircle, selectedMethodId === "new_card" && styles.radioCircleActive]}>
+              {selectedMethodId === "new_card" && <View style={styles.radioDot} />}
+            </View>
+          </TouchableOpacity>
+
+          {/* خيار Apple Pay */}
+          <TouchableOpacity
+            style={[
+              styles.paymentOptionItem,
+              selectedMethodId === "applepay" && styles.paymentOptionItemActive,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+            onPress={() => setSelectedMethodId("applepay")}
+          >
+            <Ionicons
+              name="logo-apple"
+              size={20}
+              color={selectedMethodId === "applepay" ? "#000000" : "#64748B"}
+            />
+            <Text style={styles.paymentOptionLabel}>Apple Pay</Text>
+            <View style={[styles.radioCircle, selectedMethodId === "applepay" && styles.radioCircleActive]}>
+              {selectedMethodId === "applepay" && <View style={styles.radioDot} />}
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* ملخص الدفع بالكامل من الخادم (CRT-005) */}
         <View style={styles.card}>
@@ -1172,4 +1331,52 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
+  cardHeaderWithLink: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  manageCardsLink: {
+    fontSize: 12,
+    color: "#2563EB",
+    fontWeight: "600",
+  },
+  paymentNoticeBox: {
+    backgroundColor: "#F0FDF4",
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#DCFCE7",
+    marginBottom: 12,
+    alignItems: "center",
+    gap: 6,
+  },
+  paymentNoticeText: {
+    flex: 1,
+    fontSize: 11,
+    color: "#166534",
+    lineHeight: 16,
+  },
+  paymentOptionItem: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  paymentOptionItemActive: {
+    borderColor: "#2563EB",
+    backgroundColor: "#EFF6FF",
+  },
+  paymentOptionLabel: {
+    flex: 1,
+    fontSize: 13,
+    color: "#1E293B",
+    fontWeight: "600",
+  },
 });
+
