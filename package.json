@@ -25,5 +25,8 @@
     "tsx": "^4.23.15",
     "typescript": "^5.8.2",
     "vitest": "^3.0.7"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0"
   }
 }

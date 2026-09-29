@@ -251,5 +251,52 @@
       "revoked": "Revoked",
       "existingAdmins": "Current Admin Staff"
     }
+  },
+  "customer": {
+    "tabs": {
+      "home": "Home",
+      "orders": "Orders",
+      "taxi": "Taxi",
+      "profile": "My Account"
+    },
+    "home": {
+      "title": "Home",
+      "guestWelcome": "Welcome to Mahallat",
+      "sectionsTitle": "Categories",
+      "restaurants": "Restaurants",
+      "retail": "Retail Stores",
+      "mart": "Mart & Grocery",
+      "pharmacy": "Pharmacies",
+      "selfPickup": "Self Pickup",
+      "taxi": "Taxi",
+      "hiddenNotice": "Hidden per city settings"
+    },
+    "orders": {
+      "title": "Orders",
+      "emptyTitle": "No orders yet",
+      "emptyDescription": "When you place an order, your active and past orders will appear here for live tracking."
+    },
+    "taxi": {
+      "title": "Taxi",
+      "badge": "Coming Soon",
+      "comingSoonTitle": "Taxi Service Coming Soon",
+      "comingSoonDescription": "We are preparing our fleet to bring you reliable taxi rides within Mahallat."
+    },
+    "profile": {
+      "title": "My Account",
+      "guestTitle": "Guest Account",
+      "guestBadge": "Guest Browsing",
+      "guestDescription": "You are browsing as a guest. You will only be asked to sign in when saving an address or placing an order.",
+      "languageSection": "Language & Settings",
+      "currentLanguage": "Current Language",
+      "switchLanguage": "العربية",
+      "appVersion": "Version 1.0.0"
+    },
+    "ui": {
+      "retry": "Retry",
+      "loading": "Loading...",
+      "error": "Something went wrong",
+      "back": "Back"
+    }
   }
 }

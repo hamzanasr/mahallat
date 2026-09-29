@@ -251,5 +251,52 @@
       "revoked": "ملغاة",
       "existingAdmins": "موظفو الإدارة الحاليون"
     }
+  },
+  "customer": {
+    "tabs": {
+      "home": "الرئيسية",
+      "orders": "الطلبات",
+      "taxi": "Taxi",
+      "profile": "حسابي"
+    },
+    "home": {
+      "title": "الرئيسية",
+      "guestWelcome": "أهلاً بك في محلات",
+      "sectionsTitle": "الأقسام",
+      "restaurants": "مطاعم",
+      "retail": "محلات متنوعة",
+      "mart": "مارت وبقالة",
+      "pharmacy": "صيدليات",
+      "selfPickup": "استلم بنفسك",
+      "taxi": "تاكسي",
+      "hiddenNotice": "مخفي حسب إعدادات المدينة"
+    },
+    "orders": {
+      "title": "الطلبات",
+      "emptyTitle": "لا توجد طلبات بعد",
+      "emptyDescription": "عندما تقوم بالطلب، ستظهر طلباتك هنا لتتبع حالتها خطوة بخطوة."
+    },
+    "taxi": {
+      "title": "Taxi",
+      "badge": "قريباً",
+      "comingSoonTitle": "خدمة التاكسي قريباً",
+      "comingSoonDescription": "نعمل على تجهيز أسطول التاكسي لتوفير رحلات وتوصيل موثوق عبر التطبيق."
+    },
+    "profile": {
+      "title": "حسابي",
+      "guestTitle": "حساب زائر",
+      "guestBadge": "تصفح حر",
+      "guestDescription": "أنت تتصفح كزائر. لن يُطلب منك تسجيل الدخول إلا عند حفظ عنوان أو إتمام الطلب.",
+      "languageSection": "اللغة والإعدادات",
+      "currentLanguage": "اللغة الحالية",
+      "switchLanguage": "English",
+      "appVersion": "الإصدار 1.0.0"
+    },
+    "ui": {
+      "retry": "إعادة المحاولة",
+      "loading": "جاري التحميل...",
+      "error": "حدث خطأ ما",
+      "back": "رجوع"
+    }
   }
 }

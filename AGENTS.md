@@ -83,4 +83,6 @@ npm run lint             # الفحص الشكلي
 npm test                 # الاختبارات
 npm run db:types         # توليد أنواع TypeScript من قاعدة بيانات Supabase
 npx supabase db push     # رفع ملفات الترحيل الجديدة لمشروع Supabase
+# تثبيت أي حزمة في تطبيق العميل:
+npx expo install <package> -- --workspace=apps/customer   # حصراً بـ expo install لا npm install
 ```

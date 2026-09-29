@@ -69,3 +69,10 @@
 | `taxi_driver_max_cancels_before_ban` | حظر سائق Taxi بعد عدد إلغاءات | `number` | `3` | عام | TAX-001 |
 | `address_divergence_alert_threshold_meters` | مسافة تنبيه اختلاف موقع العميل عن العنوان | `number` | `250` | عام | CUS-008 |
 | `out_of_stock_customer_response_window_minutes` | مهلة رد العميل عند نفاد صنف | `duration_minutes` | `3` | عام | ORD-005 |
+| `section_restaurants_enabled` | إظهار قسم المطاعم | `boolean` | `true` | عام، مدينة | CUS-009 |
+| `section_retail_enabled` | إظهار قسم المحلات المتنوعة | `boolean` | `true` | عام، مدينة | CUS-009 |
+| `section_mart_enabled` | إظهار قسم المارت والسوبرماركت | `boolean` | `true` | عام، مدينة | CUS-009 |
+| `section_pharmacy_enabled` | إظهار قسم الصيدليات (مخفي افتراضياً) | `boolean` | `false` | عام، مدينة | CUS-009 |
+| `section_self_pickup_enabled` | إظهار خدمة استلم بنفسك | `boolean` | `true` | عام، مدينة | CUS-009 |
+| `section_taxi_enabled` | إظهار خدمة Taxi (قريباً) | `boolean` | `true` | عام، مدينة | CUS-009 |
+

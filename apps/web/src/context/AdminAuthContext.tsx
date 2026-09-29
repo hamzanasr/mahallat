@@ -24,6 +24,20 @@ interface AdminAuthContextType {
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
+// دالة فحص مستوى الخطوة الثانية (AAL2) لضمان استحالة التجاوز في بيئة الإنتاج
+export function checkIsAAL2(
+  aalClaim: string | null | undefined,
+  isDemoFlagInStorage: boolean,
+  nodeEnv: string = process.env.NODE_ENV
+): boolean {
+  // المستوى المعتمد دولياً ونظامياً من خادم Supabase
+  if (aalClaim === "aal2") return true;
+  // في بيئة التطوير فقط يُسمح بتجاوز الديمو لتسهيل الاختبار السريع للمطور
+  if (nodeEnv === "development" && isDemoFlagInStorage) return true;
+  // في بيئة الإنتاج يرفض تماماً أي تجاوز محلي
+  return false;
+}
+
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -88,10 +102,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // التحقق من مستوى الخطوة الثانية (AAL2)
-  // في Supabase JWT: يكون aal إما aal1 أو aal2
-  // في وضع الديمو، إذا اختار المستخدم وضع الديمو أو تحقق عبر TOTP
   const aalClaim = (session as any)?.aal || (session?.user as any)?.app_metadata?.aal || "aal1";
-  const isAAL2 = aalClaim === "aal2" || (typeof window !== "undefined" && localStorage.getItem("mahallat_demo_aal2") === "true");
+  const isDemoFlag = typeof window !== "undefined" && localStorage.getItem("mahallat_demo_aal2") === "true";
+  const isAAL2 = checkIsAAL2(aalClaim, isDemoFlag, process.env.NODE_ENV);
 
   const isSuperAdmin = roles.includes("super_admin");
   const isOperations = roles.includes("operations") || isSuperAdmin;

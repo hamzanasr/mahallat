@@ -145,8 +145,11 @@ export default function AdminLoginPage() {
     }
   };
 
-  // إكمال سريع لوضع الديمو (يمنح تجربة سريعة مع تخزين علامة AAL2)
+  const isDevelopment = process.env.NODE_ENV === "development";
+
+  // إكمال سريع لوضع الديمو (يمنح تجربة سريعة مع تخزين علامة AAL2) - محصور ببيئة التطوير فقط
   const handleInstantDemoMfa = () => {
+    if (!isDevelopment) return;
     localStorage.setItem("mahallat_demo_aal2", "true");
     router.push("/admin");
   };
@@ -166,8 +169,8 @@ export default function AdminLoginPage() {
           <p className="text-sm text-slate-400 mt-1">{t.admin.loginSubtitle}</p>
         </div>
 
-        {/* بطاقة الحسابات التجريبية السريعة (Demo Accounts) */}
-        {!showMfaStep && (
+        {/* بطاقة الحسابات التجريبية السريعة (تظهر في بيئة التطوير فقط) */}
+        {!showMfaStep && isDevelopment && (
           <div className="mb-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-md">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -283,7 +286,7 @@ export default function AdminLoginPage() {
                     type="text"
                     maxLength={6}
                     autoFocus
-                    placeholder="123456"
+                    placeholder="000000"
                     value={mfaCode}
                     onChange={(e) => setMfaCode(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-center font-mono text-xl tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
@@ -306,17 +309,19 @@ export default function AdminLoginPage() {
                 </button>
               </form>
 
-              {/* زر الدخول السريع في وضع الديمو */}
-              <div className="pt-2 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={handleInstantDemoMfa}
-                  className="w-full py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{t.admin.instantDemoMfa}</span>
-                </button>
-              </div>
+              {/* زر الدخول السريع في وضع الديمو - يظهر في بيئة التطوير فقط ومستحيل ظهوره في الإنتاج */}
+              {isDevelopment && (
+                <div className="pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={handleInstantDemoMfa}
+                    className="w-full py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{t.admin.instantDemoMfa}</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
