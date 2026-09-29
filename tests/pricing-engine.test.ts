@@ -612,7 +612,7 @@ describe("محرك الأسعار والرسوم والأوقات وعرض ال�
         p_store_id: testRestaurantId,
       });
 
-      const sections = menuData as any[];
+      const sections = (Array.isArray(menuData) ? menuData : (menuData as any).sections) as any[];
       expect(sections.length).toBeGreaterThan(0);
       const items = sections[0].items;
       expect(items.length).toBeGreaterThan(0);
