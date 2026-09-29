@@ -108,6 +108,7 @@ interface MenuItemRecord {
   allergens: string[];
   is_sfda_exempt: boolean;
   sfda_exemption_reason_id: string | null;
+  is_suggested_in_cart?: boolean;
 }
 
 interface ContractItem {
@@ -175,6 +176,7 @@ export default function StoreDetailPage() {
   const [itemIsSfdaExempt, setItemIsSfdaExempt] = useState(false);
   const [itemSfdaReasonId, setItemSfdaReasonId] = useState("");
   const [itemAutoPublish, setItemAutoPublish] = useState(false);
+  const [itemIsSuggestedInCart, setItemIsSuggestedInCart] = useState(false);
 
   // العقود
   const [contracts, setContracts] = useState<ContractItem[]>([]);
@@ -472,6 +474,7 @@ export default function StoreDetailPage() {
         is_sfda_exempt: itemIsSfdaExempt,
         sfda_exemption_reason_id: itemIsSfdaExempt ? itemSfdaReasonId : null,
         is_published: itemAutoPublish,
+        is_suggested_in_cart: itemIsSuggestedInCart,
       });
 
       if (error) throw error;
@@ -482,10 +485,31 @@ export default function StoreDetailPage() {
       setItemCalories("");
       setItemAllergens([]);
       setItemIsSfdaExempt(false);
+      setItemIsSuggestedInCart(false);
       setFeedbackMsg({ type: "success", text: "تمت إضافة الصنف بنجاح" });
       await loadAllStoreData();
     } catch (e: any) {
       setFeedbackMsg({ type: "error", text: e.message || "تعذر إضافة الصنف" });
+    }
+  };
+
+  // تبديل اقتراح الصنف في السلة (CRT-003)
+  const handleToggleSuggestedItem = async (item: MenuItemRecord) => {
+    try {
+      const newVal = !item.is_suggested_in_cart;
+      const { error } = await supabase
+        .from("menu_items")
+        .update({ is_suggested_in_cart: newVal })
+        .eq("id", item.id);
+
+      if (error) throw error;
+      setFeedbackMsg({
+        type: "success",
+        text: newVal ? "تم تمييز الصنف ليُقترح في السلة" : "تم إلغاء اقتراح الصنف في السلة",
+      });
+      await loadAllStoreData();
+    } catch (e: any) {
+      setFeedbackMsg({ type: "error", text: e.message || "تعذر تعديل حالة الاقتراح" });
     }
   };
 
@@ -945,15 +969,30 @@ export default function StoreDetailPage() {
                                 </div>
 
                                 <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-xs">
-                                  <span
-                                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                                      it.is_published
-                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                        : "bg-slate-800 text-slate-400 border-slate-700"
-                                    }`}
-                                  >
-                                    {it.is_published ? t.admin.menu.published : t.admin.menu.draft}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                        it.is_published
+                                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                          : "bg-slate-800 text-slate-400 border-slate-700"
+                                      }`}
+                                    >
+                                      {it.is_published ? t.admin.menu.published : t.admin.menu.draft}
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleSuggestedItem(it)}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-colors ${
+                                        it.is_suggested_in_cart
+                                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                                          : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300"
+                                      }`}
+                                      title="تبديل الاقتراح في السلة (CRT-003)"
+                                    >
+                                      {it.is_suggested_in_cart ? "⭐ مقترح بالسلة" : "+ اقتراح"}
+                                    </button>
+                                  </div>
 
                                   <button
                                     onClick={() => handleTogglePublishItem(it)}
@@ -1401,6 +1440,19 @@ export default function StoreDetailPage() {
                 />
                 <label htmlFor="autoPublishCheck" className="text-xs text-slate-300 cursor-pointer">
                   نشر الصنف مباشرة للعملاء (يشترط اكتمال السعرات أو الإعفاء MER-025)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="suggestedInCartCheck"
+                  checked={itemIsSuggestedInCart}
+                  onChange={(e) => setItemIsSuggestedInCart(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500 rounded"
+                />
+                <label htmlFor="suggestedInCartCheck" className="text-xs text-slate-300 cursor-pointer">
+                  ⭐ يُقترح في السلة لزيادة المبيعات (CRT-003)
                 </label>
               </div>
             </div>

@@ -507,6 +507,7 @@ export type Database = {
           is_high_salt: boolean
           is_published: boolean
           is_sfda_exempt: boolean
+          is_suggested_in_cart: boolean
           name_ar: string
           name_en: string
           paused_until: string | null
@@ -535,6 +536,7 @@ export type Database = {
           is_high_salt?: boolean
           is_published?: boolean
           is_sfda_exempt?: boolean
+          is_suggested_in_cart?: boolean
           name_ar: string
           name_en: string
           paused_until?: string | null
@@ -563,6 +565,7 @@ export type Database = {
           is_high_salt?: boolean
           is_published?: boolean
           is_sfda_exempt?: boolean
+          is_suggested_in_cart?: boolean
           name_ar?: string
           name_en?: string
           paused_until?: string | null
@@ -1221,6 +1224,7 @@ export type Database = {
       }
       stores: {
         Row: {
+          banner_url: string | null
           can_exceed_max_prep_time: boolean
           category_id: string | null
           city_id: string
@@ -1229,6 +1233,7 @@ export type Database = {
           default_prep_time_minutes: number
           delivery_zone_id: string | null
           id: string
+          logo_url: string | null
           menu_permission: Database["public"]["Enums"]["menu_permission_type"]
           menu_price_tolerance_percentage: number
           menu_slug: string
@@ -1248,6 +1253,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_url?: string | null
           can_exceed_max_prep_time?: boolean
           category_id?: string | null
           city_id: string
@@ -1256,6 +1262,7 @@ export type Database = {
           default_prep_time_minutes?: number
           delivery_zone_id?: string | null
           id?: string
+          logo_url?: string | null
           menu_permission?: Database["public"]["Enums"]["menu_permission_type"]
           menu_price_tolerance_percentage?: number
           menu_slug: string
@@ -1275,6 +1282,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_url?: string | null
           can_exceed_max_prep_time?: boolean
           category_id?: string | null
           city_id?: string
@@ -1283,6 +1291,7 @@ export type Database = {
           default_prep_time_minutes?: number
           delivery_zone_id?: string | null
           id?: string
+          logo_url?: string | null
           menu_permission?: Database["public"]["Enums"]["menu_permission_type"]
           menu_price_tolerance_percentage?: number
           menu_slug?: string

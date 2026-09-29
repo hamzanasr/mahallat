@@ -11,11 +11,13 @@ import {
   ActivityIndicator,
   RefreshControl,
   Dimensions,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAddress } from "../../context/AddressContext";
+import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabase";
 import { formatMoney, formatCaloriesDisplay } from "@mahallat/shared";
 import ItemCustomizationModal, {
@@ -68,9 +70,15 @@ export default function StoreDetailScreen() {
   const [selectedItemForModal, setSelectedItemForModal] = useState<MenuItemData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // سلة مؤقتة للعرض والتأكيد في صفحة المتجر
-  const [cartItemsCount, setCartItemsCount] = useState<number>(0);
-  const [cartSubtotalHalalas, setCartSubtotalHalalas] = useState<number>(0);
+  // ربط سلة التسوق الحقيقية (CRT-001)
+  const {
+    addItem,
+    confirmSwitchAndAdd,
+    items: cartItems,
+    itemCount,
+    quote: cartQuote,
+    storeId: cartStoreId,
+  } = useCart();
 
   const fetchStoreData = useCallback(async () => {
     if (!id) return;
@@ -153,9 +161,57 @@ export default function StoreDetailScreen() {
   };
 
   const handleAddToCart = (customization: SelectedCustomization) => {
-    // إضافة للعرض المؤقت وحساب السلة (في الخطوة 2.6 سنربطه بـ CartContext بالكامل)
-    setCartItemsCount((prev) => prev + customization.quantity);
-    setCartSubtotalHalalas((prev) => prev + customization.totalPriceHalalas);
+    const sName = storeHeader
+      ? lang === "ar"
+        ? storeHeader.store_name_ar
+        : storeHeader.store_name_en
+      : "";
+
+    const addParams = {
+      storeId: id as string,
+      storeName: sName,
+      item: {
+        id: customization.item.id,
+        name_ar: customization.item.name_ar,
+        name_en: customization.item.name_en,
+        image_url: customization.item.image_url,
+        customer_price_halalas: customization.item.customer_price_halalas,
+      },
+      size: customization.size
+        ? {
+            id: customization.size.id,
+            name_ar: customization.size.name_ar,
+            name_en: customization.size.name_en,
+            customer_price_halalas: customization.size.customer_price_halalas,
+          }
+        : null,
+      options: customization.options.map((o) => ({
+        id: o.id,
+        name_ar: o.name_ar,
+        price_delta_halalas: o.price_delta_halalas,
+      })),
+      quantity: customization.quantity,
+      note: customization.note,
+    };
+
+    const res = addItem(addParams);
+
+    if (res.requiresSwitchConfirmation) {
+      Alert.alert(
+        lang === "ar" ? "تغيير المتجر؟" : "Switch Store?",
+        lang === "ar"
+          ? `سلتك الحالية تحتوي على أصناف من «${res.currentStoreName}». هل تريد تفريغها والبدء بهذا المتجر؟`
+          : `Your cart contains items from "${res.currentStoreName}". Clear and start with this store?`,
+        [
+          { text: lang === "ar" ? "إلغاء" : "Cancel", style: "cancel" },
+          {
+            text: lang === "ar" ? "تفريغ والبدء" : "Clear & Start",
+            style: "destructive",
+            onPress: () => confirmSwitchAndAdd(addParams),
+          },
+        ]
+      );
+    }
   };
 
   const formatOpenTime = (isoString: string | null | undefined) => {
@@ -181,9 +237,7 @@ export default function StoreDetailScreen() {
   const isNonRegisteredOrPaper =
     storeHeader?.store_type === "contract_paper" || storeHeader?.store_type === "unregistered";
 
-  // حساب المتبقي للحد الأدنى للطلب
   const minOrderHalalas = storeHeader?.min_order_halalas || 0;
-  const shortfallHalalas = Math.max(0, minOrderHalalas - cartSubtotalHalalas);
 
   if (loading && !refreshing) {
     return (
@@ -476,19 +530,19 @@ export default function StoreDetailScreen() {
         )}
       </ScrollView>
 
-      {/* شريط السلة العائم السفلي (CUS-005) */}
-      {cartItemsCount > 0 && (
+      {/* شريط السلة العائم السفلي (CUS-005, CRT-001) */}
+      {itemCount > 0 && (
         <View style={styles.floatingCartBar}>
-          {shortfallHalalas > 0 ? (
+          {cartQuote && !cartQuote.min_order_reached && (
             <View style={styles.shortfallAlert}>
               <Ionicons name="alert-circle-outline" size={14} color="#D97706" />
               <Text style={styles.shortfallText}>
                 {lang === "ar"
-                  ? `أضف بـ ${formatMoney(shortfallHalalas)} للوصول للحد الأدنى للطلب (${formatMoney(minOrderHalalas)})`
-                  : `Add ${formatMoney(shortfallHalalas)} to reach min order (${formatMoney(minOrderHalalas)})`}
+                  ? `أضف بـ ${formatMoney(cartQuote.min_order_shortfall_halalas)} للوصول للحد الأدنى للطلب (${formatMoney(cartQuote.min_order_halalas)})`
+                  : `Add ${formatMoney(cartQuote.min_order_shortfall_halalas)} to reach min order (${formatMoney(cartQuote.min_order_halalas)})`}
               </Text>
             </View>
-          ) : null}
+          )}
 
           <TouchableOpacity
             style={[styles.cartBarBtn, { flexDirection: isRTL ? "row-reverse" : "row" }]}
@@ -496,7 +550,7 @@ export default function StoreDetailScreen() {
           >
             <View style={[styles.cartBadge, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               <Ionicons name="cart" size={18} color="#FFFFFF" />
-              <Text style={styles.cartBadgeCount}>{cartItemsCount}</Text>
+              <Text style={styles.cartBadgeCount}>{itemCount}</Text>
             </View>
 
             <Text style={styles.cartBarTitle}>
@@ -504,7 +558,7 @@ export default function StoreDetailScreen() {
             </Text>
 
             <Text style={styles.cartBarTotal}>
-              {formatMoney(cartSubtotalHalalas)}
+              {cartQuote ? formatMoney(cartQuote.total_halalas) : ""}
             </Text>
           </TouchableOpacity>
         </View>
