@@ -19,6 +19,9 @@ import {
   LogOut,
   ShieldCheck,
   Languages,
+  Building2,
+  ClipboardCheck,
+  Tags,
 } from "lucide-react";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -100,7 +103,28 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       href: "/admin/stores",
       icon: Store,
       active: pathname.startsWith("/admin/stores"),
-      enabled: false,
+      enabled: isSuperAdmin || isOperations,
+    },
+    {
+      title: (t.admin.nav as any).merchants || "التجار والمنشآت",
+      href: "/admin/merchants",
+      icon: Building2,
+      active: pathname.startsWith("/admin/merchants"),
+      enabled: isSuperAdmin || isOperations || isFinance,
+    },
+    {
+      title: (t.admin.nav as any).merchantReviews || "مراجعة التجار",
+      href: "/admin/merchant-reviews",
+      icon: ClipboardCheck,
+      active: pathname.startsWith("/admin/merchant-reviews"),
+      enabled: isSuperAdmin || isOperations,
+    },
+    {
+      title: (t.admin.nav as any).categories || "التصنيفات والمستندات",
+      href: "/admin/categories",
+      icon: Tags,
+      active: pathname.startsWith("/admin/categories"),
+      enabled: isSuperAdmin || isOperations,
     },
     {
       title: t.admin.nav.drivers,

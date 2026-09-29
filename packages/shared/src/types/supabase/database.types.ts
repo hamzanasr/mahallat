@@ -1254,6 +1254,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_store_contract: {
+        Args: {
+          p_contract_per_customer_cap_halalas: number
+          p_contract_per_customer_period_days: number
+          p_contract_percentage: number
+          p_mart_pharmacy_customer_markup_percentage: number
+          p_mart_pharmacy_merchant_percentage: number
+          p_menu_markup_percentage: number
+          p_menu_markup_platform_share_percentage: number
+          p_payment_gateway_fee_fixed_halalas: number
+          p_payment_gateway_fee_percentage: number
+          p_pricing_model: Database["public"]["Enums"]["contract_pricing_model"]
+          p_store_id: string
+          p_text_orders_platform_fee_percentage: number
+          p_tier1_fee_halalas: number
+          p_tier1_order_threshold_halalas: number
+          p_tier2_fee_halalas: number
+        }
+        Returns: string
+      }
+      admin_save_branch: {
+        Args: {
+          p_address_text: string
+          p_city_id: string
+          p_default_prep_time_minutes?: number
+          p_id: string
+          p_is_active?: boolean
+          p_latitude: number
+          p_longitude: number
+          p_min_order_halalas?: number
+          p_name_ar: string
+          p_name_en: string
+          p_store_id: string
+          p_working_hours?: Json
+        }
+        Returns: string
+      }
       admin_save_city: {
         Args: {
           p_geojson?: string
@@ -1313,6 +1350,26 @@ export type Database = {
         }
         Returns: Json
       }
+      get_store_branches: {
+        Args: { p_store_id: string }
+        Returns: {
+          address_text: string
+          city_id: string
+          created_at: string
+          default_prep_time_minutes: number
+          id: string
+          is_active: boolean
+          latitude: number
+          longitude: number
+          min_order_halalas: number
+          name_ar: string
+          name_en: string
+          paused_until: string
+          store_id: string
+          updated_at: string
+          working_hours: Json
+        }[]
+      }
       has_role: {
         Args: {
           _branch_id?: string
@@ -1326,6 +1383,14 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_aal2: { Args: { _user_id: string }; Returns: boolean }
+      review_menu_change_request: {
+        Args: {
+          p_action: string
+          p_rejection_reason?: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       submit_menu_item_price_update: {
         Args: { p_item_id: string; p_new_price_halalas: number }
         Returns: Json
