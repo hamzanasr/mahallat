@@ -13,6 +13,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "test": "vitest run",
     "db:types": "supabase gen types typescript --linked > packages/shared/src/types/supabase/database.types.ts",
+    "db:seed-demo": "tsx scripts/seed-demo-data.ts",
     "seed:demo": "tsx scripts/seed-demo-data.ts",
     "admin:create": "tsx scripts/create-admin.ts"
   },
