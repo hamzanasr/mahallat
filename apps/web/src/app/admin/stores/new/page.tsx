@@ -56,7 +56,7 @@ export default function NewStorePage() {
   const [isCreatingNewMerchant, setIsCreatingNewMerchant] = useState(false);
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
-  const [storeType, setStoreType] = useState<"contracted_menu" | "contracted_text_only" | "uncontracted">("contracted_menu");
+  const [storeType, setStoreType] = useState<"contracted_menu" | "contracted_text_only">("contracted_menu");
   const [operationType, setOperationType] = useState<"restaurant" | "retail" | "mart" | "pharmacy">("restaurant");
   const [categoryId, setCategoryId] = useState("");
 
@@ -428,7 +428,7 @@ export default function NewStorePage() {
             {/* نوع المتجر */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-300">نوع المتجر (MER-046)</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label
                   className={`p-3 rounded-xl border text-xs cursor-pointer flex flex-col gap-1 transition-all ${
                     storeType === "contracted_menu"
@@ -470,28 +470,6 @@ export default function NewStorePage() {
                   </div>
                   <span className="text-[11px] text-slate-400 leading-relaxed">
                     طلبات كتابة وفواتير متجر دون منيو رقمي.
-                  </span>
-                </label>
-
-                <label
-                  className={`p-3 rounded-xl border text-xs cursor-pointer flex flex-col gap-1 transition-all ${
-                    storeType === "uncontracted"
-                      ? "bg-blue-600/10 border-blue-500 text-white"
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between font-semibold">
-                    <span>غير متعاقد</span>
-                    <input
-                      type="radio"
-                      name="storeType"
-                      checked={storeType === "uncontracted"}
-                      onChange={() => setStoreType("uncontracted")}
-                      className="accent-blue-500"
-                    />
-                  </div>
-                  <span className="text-[11px] text-slate-400 leading-relaxed">
-                    آلية «اطلب اللي تبي»، لا تتوفر له قوائم منيو.
                   </span>
                 </label>
               </div>

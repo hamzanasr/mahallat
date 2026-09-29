@@ -19,6 +19,7 @@ import { useCustomerAuth } from "../context/CustomerAuthContext";
 import { useAddress } from "../context/AddressContext";
 import { useCart, OutOfStockAction, SuggestedItem } from "../context/CartContext";
 import { formatMoney, formatCaloriesDisplay } from "@mahallat/shared";
+import { supabase } from "../lib/supabase";
 import ItemCustomizationModal, {
   MenuItemData,
   SelectedCustomization,
@@ -46,7 +47,14 @@ export default function CartScreen() {
     updateQuantity,
     removeItem,
     clearCart,
+    refreshQuote,
   } = useCart();
+
+  // حالة إرسال الطلب ومفتاح عدم التكرار (Idempotency)
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(
+    () => `idem_${Date.now()}_${Math.random().toString(36).substring(7)}`
+  );
 
   // منع الإضافة المكررة السريعة للأصناف المقترحة (CRT-003)
   const [addingSuggestedId, setAddingSuggestedId] = useState<string | null>(null);
@@ -145,7 +153,7 @@ export default function CartScreen() {
   const isOpen = quote?.is_open ?? true;
   const canCheckout = !hasErrors && isMinOrderReached && isOpen;
 
-  const handleCheckoutPress = () => {
+  const handleCheckoutPress = async () => {
     if (!user) {
       router.push("/auth");
       return;
@@ -156,14 +164,77 @@ export default function CartScreen() {
       return;
     }
 
-    if (!canCheckout) return;
+    if (!canCheckout || !quote) return;
 
-    Alert.alert(
-      lang === "ar" ? "بوابة الدفع" : "Payment Gateway",
-      lang === "ar"
-        ? "تم تأكيد السلة وحساب التسعير بدقة من الخادم. الدفع يُفعَّل في المرحلة القادمة (المرحلة 3) عبر ميسر (Moyasar)."
-        : "Cart confirmed and quoted by server. Payment will be enabled in Phase 3 via Moyasar."
-    );
+    try {
+      setSubmittingOrder(true);
+      const itemsPayload = items.map((it) => ({
+        item_id: it.itemId,
+        quantity: it.quantity,
+        size_id: it.sizeId || null,
+        option_ids: it.optionIds || [],
+        notes: it.note || null,
+      }));
+
+      const { data: res, error: rpcErr } = await supabase.rpc("create_customer_order", {
+        p_branch_id: quote.branch_id,
+        p_delivery_type: "delivery",
+        p_address_id: currentAddress.id,
+        p_items: itemsPayload as any,
+        p_expected_total_halalas: quote.total_halalas,
+        p_customer_notes: storeNote.trim() || undefined,
+        p_out_of_stock_action:
+          outOfStockAction === "remove"
+            ? "refund"
+            : outOfStockAction === "call"
+            ? "contact"
+            : "cancel",
+        p_idempotency_key: idempotencyKey,
+        p_tip_halalas: 0,
+      });
+
+      if (rpcErr) {
+        Alert.alert(
+          lang === "ar" ? "تعذر إنشاء الطلب" : "Cannot Create Order",
+          rpcErr.message
+        );
+        return;
+      }
+
+      const result = res as any;
+      if (!result.success) {
+        if (result.error_code === "PRICE_MISMATCH") {
+          Alert.alert(
+            lang === "ar" ? "تغيرت الأسعار أو الرسوم" : "Price or Fee Changed",
+            lang === "ar"
+              ? `لقد تغيّرت الأسعار أو الرسوم من الخادم.\nالإجمالي الجديد: ${formatMoney(result.new_total_halalas)}.\nتم تحديث السلة تلقائياً.`
+              : `Prices or fees have updated.\nNew total: ${formatMoney(result.new_total_halalas)}. Cart has been updated.`
+          );
+          await refreshQuote();
+          return;
+        }
+
+        Alert.alert(
+          lang === "ar" ? "تنبيه" : "Notice",
+          result.message || "حدث خطأ أثناء إنشاء الطلب"
+        );
+        return;
+      }
+
+      // نجاح إنشاء الطلب! تفريغ السلة والانتقال لصفحة متابعة الطلب
+      clearCart();
+      router.replace({
+        pathname: "/order/[id]",
+        params: { id: result.order_id },
+      } as any);
+    } catch (err: any) {
+      Alert.alert(
+        lang === "ar" ? "خطأ غير متوقع" : "Unexpected Error",
+        err?.message || "حدث خطأ أثناء معالجة الطلب"
+      );
+    } finally {
+      setSubmittingOrder(false);
+    }
   };
 
   // حالة السلة الفارغة
@@ -619,21 +690,25 @@ export default function CartScreen() {
         )}
 
         <TouchableOpacity
-          style={[styles.checkoutBtn, !canCheckout && styles.checkoutBtnDisabled]}
+          style={[styles.checkoutBtn, (!canCheckout || submittingOrder) && styles.checkoutBtnDisabled]}
           onPress={handleCheckoutPress}
-          disabled={!canCheckout && Boolean(user)}
+          disabled={(!canCheckout && Boolean(user)) || submittingOrder}
         >
-          <Text style={styles.checkoutBtnText}>
-            {!user
-              ? lang === "ar" ? "تسجيل الدخول للمتابعة" : "Login to Checkout"
-              : canCheckout
-              ? lang === "ar"
-                ? `إتمام الطلب · ${formatMoney(quote?.total_halalas || 0)}`
-                : `Checkout · ${formatMoney(quote?.total_halalas || 0)}`
-              : lang === "ar"
-              ? "الدفع غير متاح حالياً"
-              : "Checkout Unavailable"}
-          </Text>
+          {submittingOrder ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.checkoutBtnText}>
+              {!user
+                ? lang === "ar" ? "تسجيل الدخول للمتابعة" : "Login to Checkout"
+                : canCheckout
+                ? lang === "ar"
+                  ? `إتمام الطلب · ${formatMoney(quote?.total_halalas || 0)}`
+                  : `Checkout · ${formatMoney(quote?.total_halalas || 0)}`
+                : lang === "ar"
+                ? "الدفع غير متاح حالياً"
+                : "Checkout Unavailable"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 

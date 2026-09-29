@@ -34,7 +34,7 @@ interface StoreDetail {
   merchant_id: string;
   name_ar: string;
   name_en: string;
-  store_type: "contracted_menu" | "contracted_text_only" | "uncontracted";
+  store_type: "contracted_menu" | "contracted_text_only";
   operation_type: "restaurant" | "retail" | "mart" | "pharmacy";
   city_id: string;
   min_order_halalas: number;
@@ -857,14 +857,14 @@ export default function StoreDetailPage() {
       {/* 2. تبويب المنيو والمنتجات */}
       {activeTab === "menu" && (
         <div className="space-y-5">
-          {store.store_type === "uncontracted" ? (
-            <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+          {store.store_type === "contracted_text_only" ? (
+            <div className="bg-slate-900 border border-purple-500/30 rounded-2xl p-8 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto">
                 <UtensilsCrossed className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-bold text-white">{t.admin.menu.uncontractedStoreMenuAlert}</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                وفقاً للمتطلب (MER-046)، المتاجر غير المتعاقدة تعمل بآلية «اطلب اللي تبي» ولا تتوفر لها قوائم منيو رقمية.
+                وفقاً للمتطلب (MER-046)، المتاجر المتعاقدة بنظام «كتابة فقط» تعمل بالطلبات النصية وفواتير المتجر ولا تتوفر لها قوائم منيو رقمية.
               </p>
             </div>
           ) : (

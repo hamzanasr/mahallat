@@ -653,24 +653,38 @@ async function main() {
     baladiyaDocTypeId: baladiyaDocType?.id,
   });
 
-  // --- متجر 6: مخبز وتموينات البلد (ديمو) --- غير متعاقد "اطلب اللي تبي" (بلا منيو)
-  console.log("\n🥖 تهيئة متجر 6: مخبز وتموينات البلد (ديمو) - غير متعاقد بلا منيو...");
+  // --- متجر 6: مخبز وتموينات البلد (ديمو) --- متعاقد بمنيو (مخبوزات وتموينات)
+  console.log("\n🥖 تهيئة متجر 6: مخبز وتموينات البلد (ديمو) - متعاقد بمنيو...");
   const store6 = await upsertStore({
     merchantId,
     nameAr: "مخبز وتموينات البلد التاريخية (ديمو)",
     nameEn: "Al Balad Bakery & Retail (Demo)",
-    storeType: "uncontracted",
+    storeType: "contracted_menu",
     operationType: "retail",
     categoryId: categoryMap.get("retail") || null,
     cityId: jeddahCityId,
-    minOrderSar: 0,
+    minOrderSar: 15,
     defaultPrepTime: 15,
     menuPermission: "review_required",
-    tolerancePct: 0.0,
-    selfPickup: false,
+    tolerancePct: 5.0,
+    selfPickup: true,
+    selfPickupDiscountPercentage: 10.0,
     menuSlug: "albalad-bakery-demo",
     logoUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=120&h=120&fit=crop",
     bannerUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=400&fit=crop",
+  });
+
+  await supabase.rpc("admin_create_store_contract", {
+    p_store_id: store6.id,
+    p_pricing_model: "percentage",
+    p_contract_percentage: 10.0,
+    p_tier1_fee_halalas: 200,
+    p_tier1_order_threshold_halalas: 2500,
+    p_tier2_fee_halalas: 500,
+    p_contract_per_customer_cap_halalas: 3000,
+    p_menu_markup_percentage: 0.0,
+    p_payment_gateway_fee_percentage: 2.5,
+    p_payment_gateway_fee_fixed_halalas: 100,
   });
 
   await upsertBranch({
@@ -683,6 +697,8 @@ async function main() {
     address: "جدة، المنطقة التاريخية (البلد)، شارع قابل",
     baladiyaDocTypeId: baladiyaDocType?.id,
   });
+
+  await seedBakeryMenu(store6.id);
 
   // --- متجر 7: كافيه ومحمص الساحل المختص (ديمو) --- مقهى ومحمص مختص بزون شمال جدة
   console.log("\n☕ تهيئة متجر 7: كافيه ومحمص الساحل المختص (ديمو) - زون شمال جدة...");
@@ -742,7 +758,7 @@ async function main() {
   console.log(" 3. بيتزا وفطائر نابولي (ديمو) - فرعين أحدهما مغلق مؤقتاً (السلامة)، زيادة 10%");
   console.log(" 4. تموينات وسوبرماركت المروة (ديمو) - نشاط مارت، أصناف مقترحة بالسلة");
   console.log(" 5. صيدلية النور (ديمو) - متعاقد كتابة فقط (بلا منيو)");
-  console.log(" 6. مخبز وتموينات البلد (ديمو) - غير متعاقد اطلب اللي تبي (بلا منيو)");
+  console.log(" 6. مخبز وتموينات البلد (ديمو) - مخبز وتموينات متعاقد بمنيو");
   console.log(" 7. كافيه ومحمص الساحل المختص (ديمو) - زون شمال جدة، نطاق سعرات، كافيين، صوديوم عالي، خيارات إجبارية");
   console.log("\nحسابات الدخول التجريبية:");
   for (const u of DEMO_USERS) {
@@ -759,7 +775,7 @@ interface StoreParams {
   merchantId: string;
   nameAr: string;
   nameEn: string;
-  storeType: "contracted_menu" | "contracted_text_only" | "uncontracted";
+  storeType: "contracted_menu" | "contracted_text_only";
   operationType: "restaurant" | "retail" | "mart" | "pharmacy";
   categoryId: string | null;
   cityId: string;
@@ -1533,6 +1549,85 @@ async function seedCafeMenu(storeId: string) {
     prepTime: 6,
     calories: 5,
     caffeineMg: 165,
+  });
+}
+
+async function seedBakeryMenu(storeId: string) {
+  const secBreads = await upsertMenuSection(storeId, "المخبوزات الطازجة والخبز البلدي", "Fresh Breads & Bakery", 1);
+  const secPastries = await upsertMenuSection(storeId, "الحلويات الشعبية والمعمول", "Traditional Pastries & Mamoul", 2);
+  const secDrinks = await upsertMenuSection(storeId, "المشروبات والتموينات", "Drinks & Groceries", 3);
+
+  // 1. صامولي طازج بالسمسم (كيس 6 حبات)
+  const item1 = await upsertMenuItem({
+    sectionId: secBreads,
+    nameAr: "صامولي طازج بالسمسم (كيس 6 حبات)",
+    nameEn: "Fresh Sesame Samoli Bread (6 pcs)",
+    descAr: "خبز صامولي هش وطري مخبوز يومياً في أفران الحجر مع رشة سمسم ذهبي محمص",
+    priceSar: 4.0,
+    prepTime: 3,
+    calories: 180,
+    allergens: ["غلوتين", "سمسم"],
+  });
+
+  // 2. شريك حجازي بلدي بالسمسم وحبة البركة
+  const item2 = await upsertMenuItem({
+    sectionId: secBreads,
+    nameAr: "شريك حجازي بلدي بالسمسم وحبة البركة",
+    nameEn: "Hijazi Shuraik Bread with Sesame & Nigella",
+    descAr: "شريك حجازي أصيل محضر بالطريقة التقليدية مع السمن والسمسم وحبة البركة العطرة",
+    priceSar: 5.5,
+    prepTime: 5,
+    calories: 260,
+    allergens: ["غلوتين", "سمسم", "ألبان"],
+  });
+
+  // 3. تميس بلدي بالجبنة
+  const item3 = await upsertMenuItem({
+    sectionId: secBreads,
+    nameAr: "تميس بلدي بالجبنة السائلة والشيدر",
+    nameEn: "Traditional Tamees with Cream & Cheddar Cheese",
+    descAr: "تميس ساخن من الفرن محشو بمزيج غني من الجبنة الكريمية والشيدر الذائب",
+    priceSar: 8.0,
+    prepTime: 8,
+    calories: 420,
+    allergens: ["غلوتين", "ألبان"],
+  });
+
+  // 4. معمول تمر فاخر بالسمن البري
+  const item4 = await upsertMenuItem({
+    sectionId: secPastries,
+    nameAr: "معمول تمر فاخر بالسمن البري (علبة 500 جم)",
+    nameEn: "Luxury Date Maamoul with Pure Ghee (500g)",
+    descAr: "معمول هش يذوب في الفم محشو بعجوة المدينة الفاخرة ومحضر بالسمن البري النقي",
+    priceSar: 28.0,
+    prepTime: 3,
+    calories: 380,
+    isSuggestedInCart: true,
+    allergens: ["غلوتين", "ألبان"],
+  });
+
+  // 5. شابورة باليانسون والسمسم
+  const item5 = await upsertMenuItem({
+    sectionId: secPastries,
+    nameAr: "شابورة حجازية باليانسون والسمسم (كيس 400 جم)",
+    nameEn: "Hijazi Rusk with Anise & Sesame (400g)",
+    descAr: "شابورة مقرمشة لذيذة مع نكهة اليانسون والسمسم الطبيعي، مثالية مع الشاي العدني أو الكرك",
+    priceSar: 12.0,
+    prepTime: 3,
+    calories: 210,
+    allergens: ["غلوتين", "سمسم", "بيض"],
+  });
+
+  // 6. مياه شرب معبأة 330 مل مقترحة في السلة
+  await upsertMenuItem({
+    sectionId: secDrinks,
+    nameAr: "مياه شرب معبأة نقية (330 مل)",
+    nameEn: "Pure Bottled Water (330ml)",
+    descAr: "مياه شرب نقية مبردة متوازنة الأملاح",
+    priceSar: 1.5,
+    prepTime: 1,
+    calories: 0,
+    isSuggestedInCart: true,
   });
 }
 

@@ -24,7 +24,7 @@ interface StoreItem {
   merchant_id: string;
   name_ar: string;
   name_en: string;
-  store_type: "contracted_menu" | "contracted_text_only" | "uncontracted";
+  store_type: "contracted_menu" | "contracted_text_only";
   operation_type: "restaurant" | "retail" | "mart" | "pharmacy";
   city_id: string;
   min_order_halalas: number;
@@ -95,8 +95,6 @@ export default function AdminStoresPage() {
         return { label: "متعاقد بمنيو", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
       case "contracted_text_only":
         return { label: "متعاقد كتابة فقط", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
-      case "uncontracted":
-        return { label: "غير متعاقد (اطلب اللي تبي)", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
       default:
         return { label: type, color: "bg-slate-800 text-slate-300 border-slate-700" };
     }
@@ -207,7 +205,6 @@ export default function AdminStoresPage() {
             <option value="all">كل أنواع المتاجر</option>
             <option value="contracted_menu">متعاقد بمنيو</option>
             <option value="contracted_text_only">متعاقد كتابة فقط</option>
-            <option value="uncontracted">غير متعاقد</option>
           </select>
         </div>
       </div>

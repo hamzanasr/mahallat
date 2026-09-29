@@ -143,7 +143,7 @@
       "draft": "Draft",
       "publishErrorNutrition": "Cannot publish: Missing nutrition fields and not SFDA exempt (MER-025)",
       "prepTimeExceedError": "Prep time exceeds 40 minutes and store has no exemption (MER-040)",
-      "uncontractedStoreMenuAlert": "Uncontracted store: Menu feature is disabled (MER-046)"
+      "uncontractedStoreMenuAlert": "Text-only store: Menu feature is disabled (MER-046)"
     },
     "reviews": {
       "title": "Merchant Reviews",

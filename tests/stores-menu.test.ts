@@ -14,7 +14,7 @@ describe("Stores, Merchants & Menu Schema (Step 1.3)", () => {
   let testMerchantId: string;
   let testStoreNormalId: string;
   let testStoreExceedId: string;
-  let testStoreUncontractedId: string;
+  let testStoreTextOnlyId: string;
   let testStoreToleranceId: string;
   let testStoreReviewId: string;
   let testSectionNormalId: string;
@@ -137,20 +137,20 @@ describe("Stores, Merchants & Menu Schema (Step 1.3)", () => {
       .single();
     testStoreExceedId = sExceed!.id;
 
-    // ج) متجر غير متعاقد (اطلب اللي تبي)
-    const { data: sUncontracted } = await adminClient
+    // ج) متجر متعاقد كتابة فقط (بدون منيو)
+    const { data: sTextOnly } = await adminClient
       .from("stores")
       .insert({
         merchant_id: testMerchantId,
         city_id: testCityId,
-        name_ar: "متجر غير متعاقد",
-        name_en: "Uncontracted Store",
-        store_type: "uncontracted",
-        menu_slug: "test-uncontracted-" + Date.now(),
+        name_ar: "متجر متعاقد كتابة فقط",
+        name_en: "Contracted Text Only Store",
+        store_type: "contracted_text_only",
+        menu_slug: "test-text-only-" + Date.now(),
       })
       .select("id")
       .single();
-    testStoreUncontractedId = sUncontracted!.id;
+    testStoreTextOnlyId = sTextOnly!.id;
 
     // د) متجر بصلاحية تعديل في حدود نسبة 10%
     const { data: sTol } = await adminClient
@@ -418,16 +418,29 @@ describe("Stores, Merchants & Menu Schema (Step 1.3)", () => {
     expect(Number(contractAfter?.contract_percentage)).toBe(12.5);
   });
 
-  it("5. Uncontracted store cannot have menu sections or items (MER-046)", async () => {
-    // محاولة إضافة قسم منيو لمتجر غير متعاقد (uncontracted)
+  it("5. Contracted text-only store cannot have menu sections (MER-046) & uncontracted is forbidden", async () => {
+    // محاولة إضافة قسم منيو لمتجر متعاقد كتابة فقط (contracted_text_only)
     const { error } = await adminClient.from("menu_sections").insert({
-      store_id: testStoreUncontractedId,
+      store_id: testStoreTextOnlyId,
       name_ar: "قسم غير مسموح",
       name_en: "Not Allowed Section",
     });
 
     expect(error).not.toBeNull();
     expect(error?.message).toContain("MER-046");
+
+    // محاولة إنشاء متجر بنوع uncontracted الملغى نهائياً -> يجب أن يفشل بقيد CHECK
+    const { error: errUncontracted } = await adminClient.from("stores").insert({
+      merchant_id: testMerchantId,
+      city_id: testCityId,
+      name_ar: "متجر غير متعاقد ملغى",
+      name_en: "Deprecated Uncontracted Store",
+      store_type: "uncontracted" as any,
+      menu_slug: "test-deprecated-" + Date.now(),
+    });
+
+    expect(errUncontracted).not.toBeNull();
+    expect(errUncontracted?.message).toContain("check_valid_store_type");
   });
 
   it("6. Branch missing mandatory document cannot be activated (MER-001)", async () => {

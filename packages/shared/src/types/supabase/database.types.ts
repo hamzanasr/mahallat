@@ -825,6 +825,202 @@ export type Database = {
         }
         Relationships: []
       }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_role: string
+          created_at: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          order_id: string
+          reason: string | null
+          to_status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_role?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          order_id: string
+          reason?: string | null
+          to_status: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_role?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string
+          reason?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          branch_id: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_by_role: string | null
+          city_id: string
+          cooling_off_expires_at: string | null
+          created_at: string
+          customer_id: string
+          customer_notes: string | null
+          delivery_address_id: string | null
+          delivery_address_snapshot: Json | null
+          delivery_code: string | null
+          delivery_fee_halalas: number
+          delivery_type: string
+          discount_halalas: number
+          estimated_delivery_time_minutes: number
+          estimated_prep_time_minutes: number
+          id: string
+          idempotency_key: string | null
+          items_total_halalas: number
+          order_number: string
+          order_snapshot: Json
+          out_of_stock_action: string
+          pickup_code: string | null
+          service_fee_halalas: number
+          status: string
+          store_id: string
+          tip_halalas: number
+          total_halalas: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_role?: string | null
+          city_id: string
+          cooling_off_expires_at?: string | null
+          created_at?: string
+          customer_id: string
+          customer_notes?: string | null
+          delivery_address_id?: string | null
+          delivery_address_snapshot?: Json | null
+          delivery_code?: string | null
+          delivery_fee_halalas?: number
+          delivery_type: string
+          discount_halalas?: number
+          estimated_delivery_time_minutes?: number
+          estimated_prep_time_minutes?: number
+          id?: string
+          idempotency_key?: string | null
+          items_total_halalas: number
+          order_number?: string
+          order_snapshot: Json
+          out_of_stock_action?: string
+          pickup_code?: string | null
+          service_fee_halalas?: number
+          status?: string
+          store_id: string
+          tip_halalas?: number
+          total_halalas: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_role?: string | null
+          city_id?: string
+          cooling_off_expires_at?: string | null
+          created_at?: string
+          customer_id?: string
+          customer_notes?: string | null
+          delivery_address_id?: string | null
+          delivery_address_snapshot?: Json | null
+          delivery_code?: string | null
+          delivery_fee_halalas?: number
+          delivery_type?: string
+          discount_halalas?: number
+          estimated_delivery_time_minutes?: number
+          estimated_prep_time_minutes?: number
+          id?: string
+          idempotency_key?: string | null
+          items_total_halalas?: number
+          order_number?: string
+          order_snapshot?: Json
+          out_of_stock_action?: string
+          pickup_code?: string | null
+          service_fee_halalas?: number
+          status?: string
+          store_id?: string
+          tip_halalas?: number
+          total_halalas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "store_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_delivery_address_id_fkey"
+            columns: ["delivery_address_id"]
+            isOneToOne: false
+            referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       otp_rate_limits: {
         Row: {
           created_at: string
@@ -1583,6 +1779,10 @@ export type Database = {
         }
         Returns: number
       }
+      cancel_customer_order: {
+        Args: { p_order_id: string; p_reason: string }
+        Returns: Json
+      }
       check_and_record_otp_request: {
         Args: { p_device_id?: string; p_ip?: string; p_phone: string }
         Returns: Json
@@ -1609,6 +1809,22 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      create_customer_order: {
+        Args: {
+          p_address_id?: string
+          p_branch_id: string
+          p_customer_lat?: number
+          p_customer_lng?: number
+          p_customer_notes?: string
+          p_delivery_type: string
+          p_expected_total_halalas?: number
+          p_idempotency_key?: string
+          p_items?: Json
+          p_out_of_stock_action?: string
+          p_tip_halalas?: number
+        }
+        Returns: Json
+      }
       customer_menu: { Args: { p_store_id: string }; Returns: Json }
       estimate_delivery_time: {
         Args: {
@@ -1618,6 +1834,7 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_order_number: { Args: never; Returns: string }
       get_cities_geojson: {
         Args: never
         Returns: {
@@ -1753,6 +1970,54 @@ export type Database = {
       submit_menu_item_price_update: {
         Args: { p_item_id: string; p_new_price_halalas: number }
         Returns: Json
+      }
+      transition_order_status: {
+        Args: {
+          p_changed_by_role?: string
+          p_metadata?: Json
+          p_new_status: string
+          p_order_id: string
+          p_reason?: string
+        }
+        Returns: {
+          branch_id: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_by_role: string | null
+          city_id: string
+          cooling_off_expires_at: string | null
+          created_at: string
+          customer_id: string
+          customer_notes: string | null
+          delivery_address_id: string | null
+          delivery_address_snapshot: Json | null
+          delivery_code: string | null
+          delivery_fee_halalas: number
+          delivery_type: string
+          discount_halalas: number
+          estimated_delivery_time_minutes: number
+          estimated_prep_time_minutes: number
+          id: string
+          idempotency_key: string | null
+          items_total_halalas: number
+          order_number: string
+          order_snapshot: Json
+          out_of_stock_action: string
+          pickup_code: string | null
+          service_fee_halalas: number
+          status: string
+          store_id: string
+          tip_halalas: number
+          total_halalas: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
