@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   Tags,
   UserX,
+  Navigation,
 } from "lucide-react";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -153,6 +154,13 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       href: "/admin/cities",
       icon: MapPin,
       active: pathname.startsWith("/admin/cities"),
+      enabled: isSuperAdmin || isOperations,
+    },
+    {
+      title: language === "ar" ? "طلبات التغطية" : "Coverage Requests",
+      href: "/admin/coverage-requests",
+      icon: Navigation,
+      active: pathname.startsWith("/admin/coverage-requests"),
       enabled: isSuperAdmin || isOperations,
     },
     {

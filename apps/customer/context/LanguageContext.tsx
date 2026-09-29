@@ -8,13 +8,16 @@ import {
   getTranslations,
   getDirection,
   isRTL as checkIsRTL,
+  translate,
 } from "@mahallat/shared";
+
+export type CallableTranslation = TranslationSchema & ((path: string) => string);
 
 interface LanguageContextType {
   lang: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => Promise<void>;
   toggleLanguage: () => Promise<void>;
-  t: TranslationSchema;
+  t: CallableTranslation;
   isRTL: boolean;
   dir: Direction;
 }
@@ -56,7 +59,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     await setLanguage(nextLang);
   };
 
-  const t = getTranslations(lang);
+  const rawT = getTranslations(lang);
+  const tCallable = ((path: string) => translate(lang, path)) as CallableTranslation;
+  Object.assign(tCallable, rawT);
+
   const isRTL = checkIsRTL(lang);
   const dir = getDirection(lang);
 
@@ -66,7 +72,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         lang,
         setLanguage,
         toggleLanguage,
-        t,
+        t: tCallable,
         isRTL,
         dir,
       }}

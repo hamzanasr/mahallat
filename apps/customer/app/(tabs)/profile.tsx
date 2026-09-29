@@ -225,13 +225,7 @@ export default function ProfileScreen() {
                 styles.settingRow,
                 { flexDirection: isRTL ? "row-reverse" : "row" },
               ]}
-              onPress={() =>
-                Alert.alert(
-                  t.customer?.profile?.addresses || "العناوين المحفوظة",
-                  t.customer?.profile?.addressesComingSoon ||
-                    "ستتوفر إضافة وإدارة العناوين بدقة الموقع في الخطوة 2.3 القادمة"
-                )
-              }
+              onPress={() => router.push("/address")}
               activeOpacity={0.7}
             >
               <View
@@ -246,7 +240,9 @@ export default function ProfileScreen() {
                     {t.customer?.profile?.addresses || "العناوين المحفوظة"}
                   </Text>
                   <Text style={styles.settingSublabel}>
-                    {lang === "ar" ? "إضافة وإدارة عناوين التوصيل (قريباً في 2.3)" : "Manage delivery addresses (Step 2.3)"}
+                    {lang === "ar"
+                      ? "إدارة عناوين التوصيل والتأكيد بالدبوس"
+                      : "Manage delivery addresses and pin location"}
                   </Text>
                 </View>
               </View>

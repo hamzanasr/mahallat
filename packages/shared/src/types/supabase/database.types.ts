@@ -191,6 +191,149 @@ export type Database = {
         }
         Relationships: []
       }
+      coverage_requests: {
+        Row: {
+          city_hint: string | null
+          created_at: string
+          customer_id: string | null
+          device_id: string | null
+          district_name: string | null
+          id: string
+          ip_address: string | null
+          latitude: number
+          location: unknown
+          longitude: number
+          note: string | null
+        }
+        Insert: {
+          city_hint?: string | null
+          created_at?: string
+          customer_id?: string | null
+          device_id?: string | null
+          district_name?: string | null
+          id?: string
+          ip_address?: string | null
+          latitude: number
+          location: unknown
+          longitude: number
+          note?: string | null
+        }
+        Update: {
+          city_hint?: string | null
+          created_at?: string
+          customer_id?: string | null
+          device_id?: string | null
+          district_name?: string | null
+          id?: string
+          ip_address?: string | null
+          latitude?: number
+          location?: unknown
+          longitude?: number
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coverage_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_addresses: {
+        Row: {
+          apartment: string | null
+          building: string | null
+          city_id: string | null
+          corrected_entrance_lat: number | null
+          corrected_entrance_lng: number | null
+          corrected_entrance_location: unknown
+          created_at: string
+          customer_id: string
+          district_name: string | null
+          entry_instructions: string | null
+          floor: string | null
+          id: string
+          is_default: boolean
+          latitude: number
+          location: unknown
+          longitude: number
+          name: string
+          no_answer_instructions: string | null
+          pin_confirmed_at: string
+          short_national_address: string | null
+          street_name: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          apartment?: string | null
+          building?: string | null
+          city_id?: string | null
+          corrected_entrance_lat?: number | null
+          corrected_entrance_lng?: number | null
+          corrected_entrance_location?: unknown
+          created_at?: string
+          customer_id: string
+          district_name?: string | null
+          entry_instructions?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean
+          latitude: number
+          location: unknown
+          longitude: number
+          name: string
+          no_answer_instructions?: string | null
+          pin_confirmed_at: string
+          short_national_address?: string | null
+          street_name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          apartment?: string | null
+          building?: string | null
+          city_id?: string | null
+          corrected_entrance_lat?: number | null
+          corrected_entrance_lng?: number | null
+          corrected_entrance_location?: unknown
+          created_at?: string
+          customer_id?: string
+          district_name?: string | null
+          entry_instructions?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean
+          latitude?: number
+          location?: unknown
+          longitude?: number
+          name?: string
+          no_answer_instructions?: string | null
+          pin_confirmed_at?: string
+          short_national_address?: string | null
+          street_name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_addresses_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_addresses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_types: {
         Row: {
           applies_to: Database["public"]["Enums"]["document_entity_type"]
@@ -1493,6 +1636,35 @@ export type Database = {
           p_request_id: string
         }
         Returns: Json
+      }
+      submit_coverage_request: {
+        Args: {
+          p_city_hint?: string
+          p_device_id?: string
+          p_district_name?: string
+          p_lat: number
+          p_lng: number
+          p_note?: string
+        }
+        Returns: {
+          city_hint: string | null
+          created_at: string
+          customer_id: string | null
+          device_id: string | null
+          district_name: string | null
+          id: string
+          ip_address: string | null
+          latitude: number
+          location: unknown
+          longitude: number
+          note: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coverage_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       submit_menu_item_price_update: {
         Args: { p_item_id: string; p_new_price_halalas: number }

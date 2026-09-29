@@ -34,4 +34,18 @@ export function getTranslations(lang: SupportedLanguage): TranslationSchema {
   return translations[lang] || translations.ar;
 }
 
+/**
+ * دالة للوصول إلى النصوص عبر المسار المفصول بنقاط (مثل customer.address.title)
+ */
+export function translate(lang: SupportedLanguage, path: string): string {
+  const dict = getTranslations(lang);
+  const parts = path.split(".");
+  let cur: any = dict;
+  for (const p of parts) {
+    if (cur == null) return path;
+    cur = cur[p];
+  }
+  return typeof cur === "string" ? cur : path;
+}
+
 export { ar, en };

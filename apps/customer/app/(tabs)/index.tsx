@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAddress } from "../../context/AddressContext";
 import { Card } from "../../components/ui/Card";
 import { supabase } from "../../lib/supabase";
 
@@ -81,7 +83,9 @@ const SECTIONS: SectionItem[] = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { lang, t, isRTL } = useLanguage();
+  const { currentDisplayLabel } = useAddress();
   const [sectionStatus, setSectionStatus] = useState<Record<string, boolean>>({
     section_restaurants_enabled: true,
     section_retail_enabled: true,
@@ -120,23 +124,42 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.container}>
-        {/* شريط علوي بسيط */}
+        {/* شريط اختيار العنوان والتوصيل الحالي (CUS-002) */}
         <View
           style={[
             styles.header,
             { flexDirection: isRTL ? "row-reverse" : "row" },
           ]}
         >
-          <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
-            <Text style={styles.appName}>{t.common.appName}</Text>
-            <Text style={styles.appTagline}>{t.customer?.home?.guestWelcome || "أهلاً بك"}</Text>
-          </View>
-          <View style={styles.guestBadge}>
-            <Ionicons name="sparkles-outline" size={14} color="#0369A1" />
-            <Text style={styles.guestBadgeText}>
-              {t.customer?.profile?.guestBadge || "تصفح حر"}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.locationSelector,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+            onPress={() => router.push("/address/select")}
+          >
+            <View style={styles.locationPinIcon}>
+              <Ionicons name="location" size={18} color="#2563eb" />
+            </View>
+            <View style={{ alignItems: isRTL ? "flex-end" : "flex-start", flex: 1, marginHorizontal: 8 }}>
+              <Text style={styles.deliverToLabel}>
+                {t.customer?.address?.currentLocationHeader || "التوصيل إلى"}
+              </Text>
+              <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 4 }}>
+                <Text style={styles.locationTitle} numberOfLines={1}>
+                  {currentDisplayLabel}
+                </Text>
+                <Ionicons name="chevron-down" size={14} color="#64748b" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.mapIconButton}
+            onPress={() => router.push("/address/new")}
+          >
+            <Ionicons name="map-outline" size={20} color="#2563eb" />
+          </TouchableOpacity>
         </View>
 
         {/* تنبيه الخطوة المؤقتة */}
@@ -247,6 +270,49 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
     marginTop: 8,
+  },
+  locationSelector: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginEnd: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  locationPinIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#eff6ff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deliverToLabel: {
+    fontSize: 11,
+    color: "#64748b",
+  },
+  locationTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#0f172a",
+    maxWidth: 180,
+  },
+  mapIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
   appName: {
     fontSize: 24,
