@@ -25,7 +25,7 @@ describe("Supabase Core Foundation (Step 1.2)", () => {
       .insert({
         name_ar: "مدينة تجريبية",
         name_en: "Test City",
-        boundary: "SRID=4326;MULTIPOLYGON(((46.60 24.60, 46.80 24.60, 46.80 24.80, 46.60 24.80, 46.60 24.60)))",
+        boundary: "SRID=4326;MULTIPOLYGON(((45.60 29.60, 45.80 29.60, 45.80 29.80, 45.60 29.80, 45.60 29.60)))",
         is_active: true,
       })
       .select("id")
@@ -177,10 +177,10 @@ describe("Supabase Core Foundation (Step 1.2)", () => {
   it("8. city_for_point should return correct city for coordinates inside, and empty for outside", async () => {
     expect(testCityId).toBeDefined();
 
-    // نقطة داخل مضلع المدينة التجريبية (lat: 24.71, lng: 46.67)
+    // نقطة داخل مضلع المدينة التجريبية (lat: 29.71, lng: 45.67)
     const { data: insideData, error: insideErr } = await adminClient.rpc("city_for_point", {
-      lat: 24.71,
-      lng: 46.67,
+      lat: 29.71,
+      lng: 45.67,
     });
 
     expect(insideErr).toBeNull();

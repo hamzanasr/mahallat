@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -39,6 +39,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invitations: {
+        Row: {
+          city_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          token: string
+        }
+        Insert: {
+          city_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+        }
+        Update: {
+          city_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_invitations_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -1210,6 +1254,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_save_city: {
+        Args: {
+          p_geojson?: string
+          p_id: string
+          p_is_active: boolean
+          p_name_ar: string
+          p_name_en: string
+        }
+        Returns: string
+      }
+      admin_update_setting: {
+        Args: {
+          p_city_id?: string
+          p_key: string
+          p_reason: string
+          p_store_id?: string
+          p_value: Json
+        }
+        Returns: Json
+      }
       city_for_point: {
         Args: { lat: number; lng: number }
         Returns: {
@@ -1227,6 +1291,18 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      get_cities_geojson: {
+        Args: never
+        Returns: {
+          created_at: string
+          geojson: string
+          id: string
+          is_active: boolean
+          name_ar: string
+          name_en: string
+          updated_at: string
+        }[]
       }
       get_setting: {
         Args: {
@@ -1249,6 +1325,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_aal2: { Args: { _user_id: string }; Returns: boolean }
       submit_menu_item_price_update: {
         Args: { p_item_id: string; p_new_price_halalas: number }
         Returns: Json

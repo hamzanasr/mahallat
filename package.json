@@ -12,13 +12,16 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "vitest run",
-    "db:types": "supabase gen types typescript --linked > packages/shared/src/types/supabase/database.types.ts"
+    "db:types": "supabase gen types typescript --linked > packages/shared/src/types/supabase/database.types.ts",
+    "seed:demo": "tsx scripts/seed-demo-data.ts",
+    "admin:create": "tsx scripts/create-admin.ts"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "dotenv": "^18.0.4",
     "prettier": "^3.5.3",
     "supabase": "^2.118.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.2",
     "vitest": "^3.0.7"
   }
