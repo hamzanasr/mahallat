@@ -11,7 +11,7 @@
     "dev:customer": "npm --workspace=apps/customer run dev",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "vitest run",
+    "test": "vitest run --fileParallelism=false",
     "db:types": "supabase gen types typescript --linked > packages/shared/src/types/supabase/database.types.ts",
     "db:seed-demo": "tsx scripts/seed-demo-data.ts",
     "seed:demo": "tsx scripts/seed-demo-data.ts",

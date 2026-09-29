@@ -79,4 +79,12 @@
 | `otp_max_requests_per_device` | الحد الأقصى لرسائل OTP لكل جهاز | `number` | `10` | عام | ADM-001 |
 | `otp_rate_limit_window_minutes` | مدة نافذة حد رسائل OTP بالدقائق | `duration_minutes` | `15` | عام | ADM-001 |
 | `terms_version` | رقم النسخة الحالية للشروط وسياسة الخصوصية | `select` | `"1.0"` | عام | REG-004 |
-
+| `delivery_base_fee_restaurants_halalas` | رسم التوصيل الأساسي للمطاعم والمحلات | `amount_halalas` | `1500` (15 ر.س) | عام، مدينة، متجر | PAY-013 |
+| `delivery_base_fee_mart_halalas` | رسم التوصيل الأساسي للمارت والصيدليات | `amount_halalas` | `1200` (12 ر.س) | عام، مدينة، متجر | PAY-013 |
+| `delivery_base_included_km` | الكيلومترات المشمولة في الرسم الأساسي | `number` | `3` | عام، مدينة، متجر | PAY-013 |
+| `delivery_per_extra_km_fee_halalas` | سعر كل كيلومتر إضافي | `amount_halalas` | `100` (1 ر.س) | عام، مدينة، متجر | PAY-013 |
+| `delivery_min_fee_halalas` | الحد الأدنى لرسوم التوصيل | `amount_halalas` | `500` (5 ر.س) | عام، مدينة | PAY-013 |
+| `delivery_max_fee_halalas` | الحد الأقصى لرسوم التوصيل | `amount_halalas` | `3000` (30 ر.س) | عام، مدينة | PAY-013 |
+| `customer_service_fee_enabled` | تفعيل رسوم الخدمة في المدينة | `boolean` | `true` | عام، مدينة | PAY-021 |
+| `estimated_delivery_speed_kmh` | متوسط سرعة التوصيل للتقدير قبل الطلب | `number` | `25` | عام، مدينة | ORD-011 |
+| `estimated_time_range_window_minutes` | عرض نطاق الوقت التقديري | `duration_minutes` | `10` | عام | ORD-011 |

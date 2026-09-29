@@ -1553,8 +1553,33 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_customer_item_price: {
+        Args: { p_base_price_halalas: number; p_store_id: string }
+        Returns: number
+      }
+      calculate_delivery_fee: {
+        Args: {
+          p_branch_id: string
+          p_city_id: string
+          p_distance_km: number
+          p_store_id: string
+        }
+        Returns: number
+      }
+      calculate_service_fee: {
+        Args: {
+          p_city_id: string
+          p_delivery_halalas: number
+          p_products_halalas: number
+        }
+        Returns: number
+      }
       check_and_record_otp_request: {
         Args: { p_device_id?: string; p_ip?: string; p_phone: string }
+        Returns: Json
+      }
+      check_branch_open_status: {
+        Args: { p_branch_id: string; p_check_time?: string }
         Returns: Json
       }
       city_for_point: {
@@ -1574,6 +1599,15 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      customer_menu: { Args: { p_store_id: string }; Returns: Json }
+      estimate_delivery_time: {
+        Args: {
+          p_city_id: string
+          p_distance_km: number
+          p_prep_time_minutes: number
+        }
+        Returns: Json
       }
       get_cities_geojson: {
         Args: never
@@ -1629,6 +1663,17 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_aal2: { Args: { _user_id: string }; Returns: boolean }
+      quote_cart: {
+        Args: {
+          p_device_lat?: number
+          p_device_lng?: number
+          p_items: Json
+          p_lat: number
+          p_lng: number
+          p_store_id: string
+        }
+        Returns: Json
+      }
       review_menu_change_request: {
         Args: {
           p_action: string
@@ -1636,6 +1681,36 @@ export type Database = {
           p_request_id: string
         }
         Returns: Json
+      }
+      stores_for_point: {
+        Args: {
+          p_category_id?: string
+          p_lat: number
+          p_lng: number
+          p_section?: string
+        }
+        Returns: {
+          banner_url: string
+          category_name_ar: string
+          category_name_en: string
+          closes_at: string
+          delivery_fee_halalas: number
+          distance_km: number
+          estimated_time_range: string
+          is_open: boolean
+          logo_url: string
+          min_order_halalas: number
+          next_open_at: string
+          operation_type: Database["public"]["Enums"]["operation_type"]
+          self_pickup_discount_percentage: number
+          self_pickup_enabled: boolean
+          serving_branch_id: string
+          serving_branch_name_ar: string
+          store_id: string
+          store_name_ar: string
+          store_name_en: string
+          store_type: Database["public"]["Enums"]["store_type"]
+        }[]
       }
       submit_coverage_request: {
         Args: {
