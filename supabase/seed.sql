@@ -80,3 +80,41 @@ ON CONFLICT (key) DO UPDATE SET
   allowed_levels = EXCLUDED.allowed_levels,
   related_requirements = EXCLUDED.related_requirements,
   options = EXCLUDED.options;
+
+-- 2. تصنيفات المتاجر الافتراضية (MER-009)
+INSERT INTO public.store_categories (name_ar, name_en, section_key, sort_order)
+VALUES
+  ('مطاعم ومأكولات', 'Restaurants', 'restaurants', 1),
+  ('كافيهات ومشروبات', 'Cafes & Beverages', 'cafes', 2),
+  ('شاورما وساندوتشات', 'Shawarma & Sandwiches', 'shawarma', 3),
+  ('حلويات وآيسكريم', 'Sweets & Ice Cream', 'sweets', 4),
+  ('مخابز ومعجنات', 'Bakeries & Pastries', 'bakeries', 5),
+  ('مارت وتموينات', 'Mart & Groceries', 'mart', 6),
+  ('صيدليات وعناية', 'Pharmacies & Care', 'pharmacy', 7),
+  ('خضار وفواكه', 'Fruits & Vegetables', 'produce', 8)
+ON CONFLICT DO NOTHING;
+
+-- 3. أنواع المستندات الإلزامية للمنشأة والفروع (MER-001)
+INSERT INTO public.document_types (code, name_ar, name_en, applies_to, is_mandatory, requires_expiry_date)
+VALUES
+  ('cr', 'السجل التجاري', 'Commercial Registration', 'merchant', true, true),
+  ('vat_certificate', 'شهادة تسجيل ضريبة القيمة المضافة', 'VAT Certificate', 'merchant', true, false),
+  ('baladiya_license', 'رخصة البلدية للفرع', 'Municipal License', 'branch', true, true)
+ON CONFLICT (code) DO UPDATE SET
+  name_ar = EXCLUDED.name_ar,
+  name_en = EXCLUDED.name_en,
+  applies_to = EXCLUDED.applies_to,
+  is_mandatory = EXCLUDED.is_mandatory,
+  requires_expiry_date = EXCLUDED.requires_expiry_date;
+
+-- 4. أسباب الإعفاء النظامي من لائحة السعرات (SFDA - REG-002)
+INSERT INTO public.sfda_exemption_reasons (code, reason_ar, reason_en)
+VALUES
+  ('fresh_produce', 'خضار وفواكه طازجة غير معالجة', 'Fresh unprocessed fruits and vegetables'),
+  ('custom_order', 'أغذية يتم إعدادها بناء على طلب العميل الخاص', 'Custom foods prepared upon specific customer request'),
+  ('single_ingredient', 'أغذية ذات مكون واحد غير معبأة', 'Single ingredient bulk unpackaged foods'),
+  ('temporary_special', 'أطباق خاصة مؤقتة لا تتجاوز 30 يوماً', 'Temporary menu specials under 30 days')
+ON CONFLICT (code) DO UPDATE SET
+  reason_ar = EXCLUDED.reason_ar,
+  reason_en = EXCLUDED.reason_en;
+
