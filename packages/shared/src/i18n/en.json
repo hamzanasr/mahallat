@@ -1,0 +1,16 @@
+{
+  "common": {
+    "appName": "Mahallat",
+    "tagline": "Delivery Platform",
+    "switchLanguage": "العربية",
+    "currentLanguage": "English",
+    "direction": "ltr"
+  },
+  "home": {
+    "welcome": "Welcome to Mahallat Platform",
+    "description": "Multi-language project skeleton is working successfully (Arabic & English)",
+    "customerApp": "Customer App",
+    "adminDashboard": "Admin Dashboard",
+    "status": "Ready for next steps"
+  }
+}

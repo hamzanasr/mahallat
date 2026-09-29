@@ -1,0 +1,16 @@
+{
+  "common": {
+    "appName": "محلات",
+    "tagline": "منصة التوصيل",
+    "switchLanguage": "English",
+    "currentLanguage": "العربية",
+    "direction": "rtl"
+  },
+  "home": {
+    "welcome": "مرحباً بك في منصة محلات",
+    "description": "هيكل المشروع متعدد اللغات يعمل بنجاح (العربية والانجليزية)",
+    "customerApp": "تطبيق العميل",
+    "adminDashboard": "لوحة الإدارة",
+    "status": "جاهز للخطوات القادمة"
+  }
+}
