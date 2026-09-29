@@ -157,7 +157,7 @@ export default function HomeScreen() {
         const { data } = await supabase
           .from("store_categories")
           .select("id, name_ar, name_en")
-          .eq("section_key", activeSection)
+          .or(`section_key.eq.${activeSection},section_key.eq.${activeSection.replace(/s$/, "")}`)
           .order("name_ar");
         setCategories(data || []);
       }

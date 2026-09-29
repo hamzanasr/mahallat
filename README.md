@@ -79,10 +79,24 @@ npm run dev:customer
 ```
 - سيظهر رمز الاستجابة السريعة (QR Code) في شاشة الأوامر.
 - امسح الرمز بكاميرا الجوال أو تطبيق Expo Go لتشغيل التطبيق مباشرة.
+- للتشغيل على متصفح الويب للكمبيوتر: اضغط حرف `w` في نفس الطرفية.
 - للتشغيل عبر النفق في حال اختلاف الشبكة:
   ```powershell
   npx --workspace=apps/customer expo start --tunnel
   ```
+
+### 6. نشر دوال الخادم (Supabase Edge Functions)
+عند الرغبة في نشر أو تحديث دوال الخادم السحابية:
+```powershell
+npx supabase functions deploy national-address
+npx supabase functions deploy send-sms
+```
+
+**الأسرار والمتغيرات المطلوبة في Supabase Secrets:**
+- `SUPABASE_URL`: رابط مشروع Supabase.
+- `SUPABASE_SERVICE_ROLE_KEY`: مفتاح الخدمة السري للخادم.
+- `NATIONAL_ADDRESS_API_KEY`: مفتاح الوصول لواجهة العنوان الوطني السعودي الموحد (SPL).
+- `SMS_PROVIDER_API_KEY`: مفتاح مزود رسائل التحقق (OTP SMS Gateway).
 
 ---
 
@@ -91,8 +105,10 @@ npm run dev:customer
 ```powershell
 npm run typecheck    # فحص توافق الأنواع لجميع أجزاء المشروع
 npm run lint         # الفحص الشكلي لجودة ونظافة الكود
-npm test             # تشغيل جميع الاختبارات الآلية (29 اختباراً تشمل القواعد المالية والأمان)
+npm test             # تشغيل جميع الاختبارات الآلية (109 اختبارات آلية ناجحة تغطي كامل قواعد المرحلتين 1 و 2)
 ```
+
+دليل التجربة اليدوية الشامل للمرحلة 2 متوفر في: [`docs/testing/phase-2.md`](docs/testing/phase-2.md).
 
 ---
 

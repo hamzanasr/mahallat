@@ -106,12 +106,13 @@ const DEMO_CITIES = [
 // 3. تصنيفات المتاجر التأسيسية
 // ==============================================================================
 const DEMO_CATEGORIES = [
-  { section_key: "fast_food", name_ar: "وجبات سريعة وشاورما", name_en: "Fast Food & Shawarma", sort_order: 1 },
-  { section_key: "burgers", name_ar: "برجر ومشويات", name_en: "Burgers & Grills", sort_order: 2 },
-  { section_key: "pizza", name_ar: "بيتزا وفطائر", name_en: "Pizza & Pastries", sort_order: 3 },
-  { section_key: "mart", name_ar: "سوبرماركت وتموينات", name_en: "Supermarket & Groceries", sort_order: 4 },
-  { section_key: "pharmacy", name_ar: "صيدليات وعناية", name_en: "Pharmacies & Care", sort_order: 5 },
-  { section_key: "retail", name_ar: "مخابز ومتاجر متنوعة", name_en: "Bakeries & Retail", sort_order: 6 },
+  { code: "fast_food", section_key: "restaurants", name_ar: "وجبات سريعة وشاورما", name_en: "Fast Food & Shawarma", sort_order: 1 },
+  { code: "burgers", section_key: "restaurants", name_ar: "برجر ومشويات", name_en: "Burgers & Grills", sort_order: 2 },
+  { code: "pizza", section_key: "restaurants", name_ar: "بيتزا وفطائر", name_en: "Pizza & Pastries", sort_order: 3 },
+  { code: "cafe", section_key: "restaurants", name_ar: "كافيه ومشروبات", name_en: "Cafe & Beverages", sort_order: 4 },
+  { code: "mart", section_key: "mart", name_ar: "سوبرماركت وتموينات", name_en: "Supermarket & Groceries", sort_order: 5 },
+  { code: "pharmacy", section_key: "pharmacies", name_ar: "صيدليات وعناية", name_en: "Pharmacies & Care", sort_order: 6 },
+  { code: "retail", section_key: "retail", name_ar: "مخابز ومتاجر متنوعة", name_en: "Bakeries & Retail", sort_order: 7 },
 ];
 
 async function main() {
@@ -220,11 +221,20 @@ async function main() {
     const { data: existingCat } = await supabase
       .from("store_categories")
       .select("id")
-      .eq("section_key", cat.section_key)
+      .eq("name_ar", cat.name_ar)
       .maybeSingle();
 
     if (existingCat) {
-      categoryMap.set(cat.section_key, existingCat.id);
+      await supabase
+        .from("store_categories")
+        .update({
+          section_key: cat.section_key,
+          name_en: cat.name_en,
+          sort_order: cat.sort_order,
+          is_active: true,
+        })
+        .eq("id", existingCat.id);
+      categoryMap.set(cat.code, existingCat.id);
     } else {
       const { data: inserted, error: catError } = await supabase
         .from("store_categories")
@@ -239,11 +249,75 @@ async function main() {
         .single();
 
       if (!catError && inserted) {
-        categoryMap.set(cat.section_key, inserted.id);
+        categoryMap.set(cat.code, inserted.id);
       }
     }
   }
   console.log(`  ✓ تم تهيئة ${categoryMap.size} تصنيفاً.`);
+
+  // 4. زون شمال جدة الجغرافي (Zone)
+  console.log("\n🗺️ تهيئة زون شمال جدة الجغرافي...");
+  let northJeddahZoneId: string = "";
+  const { data: existingZone } = await supabase
+    .from("zones")
+    .select("id")
+    .eq("name_ar", "زون شمال جدة (الروضة والزهراء والشاطئ)")
+    .maybeSingle();
+
+  if (existingZone) {
+    northJeddahZoneId = existingZone.id;
+    console.log(`  ✓ الزون موجود مسبقاً (معرف: ${northJeddahZoneId})`);
+  } else {
+    const { data: newZone, error: zoneErr } = await supabase
+      .from("zones")
+      .insert({
+        city_id: jeddahCityId,
+        name_ar: "زون شمال جدة (الروضة والزهراء والشاطئ)",
+        name_en: "North Jeddah Zone",
+        zone_type: "store_zone",
+        boundary: "SRID=4326;MULTIPOLYGON(((39.10 21.52, 39.20 21.52, 39.20 21.65, 39.10 21.65, 39.10 21.52)))",
+      })
+      .select("id")
+      .single();
+
+    if (!zoneErr && newZone) {
+      northJeddahZoneId = newZone.id;
+      console.log(`  ✓ تم إنشاء زون شمال جدة (معرف: ${northJeddahZoneId})`);
+    } else {
+      console.error(`  ❌ خطأ في إنشاء الزون:`, zoneErr?.message);
+    }
+  }
+
+  // 5. قيم التوصيل والخدمة المرنة لمدينة جدة (الخطوة 2.4 و 2.7)
+  console.log("\n⚙️ ضبط وتأكيد الإعدادات المرنة لمدينة جدة...");
+  const JEDDAH_SETTINGS = [
+    { key: "delivery_base_fee_restaurant", value: 1500 },
+    { key: "delivery_base_fee_mart", value: 1200 },
+    { key: "delivery_base_distance_km", value: 3.0 },
+    { key: "delivery_per_km_fee", value: 100 },
+    { key: "delivery_min_fee", value: 500 },
+    { key: "delivery_max_fee", value: 3000 },
+    { key: "customer_service_fee_enabled", value: true },
+    { key: "customer_service_fee_type", value: "percentage" },
+    { key: "customer_service_fee_percentage", value: 2.5 },
+    { key: "prep_time_buffer_minutes", value: 5 },
+    { key: "delivery_time_buffer_minutes", value: 5 },
+    { key: "customer_travel_speed_kmh", value: 25.0 },
+    { key: "address_divergence_alert_threshold_meters", value: 250.0 },
+  ];
+
+  for (const s of JEDDAH_SETTINGS) {
+    await supabase.from("setting_values").upsert(
+      {
+        key: s.key,
+        level: "city",
+        entity_id: jeddahCityId,
+        value: s.value as any,
+      },
+      { onConflict: "key,level,entity_id" }
+    );
+  }
+  console.log(`  ✓ تم تأكيد ${JEDDAH_SETTINGS.length} إعداداً مرناً لمدينة جدة.`);
 
   // 4. استرجاع نوع مستند رخصة البلدية وأسباب إعفاء الغذاء والدواء
   const { data: baladiyaDocType } = await supabase
@@ -324,7 +398,10 @@ async function main() {
     menuPermission: "review_required",
     tolerancePct: 5.0,
     selfPickup: true,
+    selfPickupDiscountPercentage: 10.0,
     menuSlug: "coast-shawarma-demo",
+    logoUrl: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1561651823-34feb02250e4?w=800&h=400&fit=crop",
   });
 
   // العقد المالي: نسبة
@@ -341,8 +418,8 @@ async function main() {
     p_payment_gateway_fee_fixed_halalas: 100,
   });
 
-  // الفرع في حي الروضة بجدة
-  const branch1Id = await upsertBranch({
+  // الفرع 1A في حي الروضة بجدة
+  await upsertBranch({
     storeId: store1.id,
     nameAr: "فرع حي الروضة - شارع الكيال",
     nameEn: "Al Rawdah Branch - Al Kayyal St",
@@ -350,6 +427,18 @@ async function main() {
     lat: 21.5562,
     lng: 39.1624,
     address: "جدة، حي الروضة، تقاطع شارع الكيال مع سعود الفيصل",
+    baladiyaDocTypeId: baladiyaDocType?.id,
+  });
+
+  // الفرع 1B في حي الزهراء بجدة (متجر متعدد الفروع)
+  await upsertBranch({
+    storeId: store1.id,
+    nameAr: "فرع حي الزهراء - شارع البترجي",
+    nameEn: "Al Zahra Branch - Al Batterjee St",
+    cityId: jeddahCityId,
+    lat: 21.5950,
+    lng: 39.1350,
+    address: "جدة، حي الزهراء، شارع البترجي بالقرب من المستشفى السعودي الألماني",
     baladiyaDocTypeId: baladiyaDocType?.id,
   });
 
@@ -371,7 +460,10 @@ async function main() {
     menuPermission: "price_tolerance",
     tolerancePct: 7.0,
     selfPickup: true,
+    selfPickupDiscountPercentage: 10.0,
     menuSlug: "alandalus-burger-demo",
+    logoUrl: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=800&h=400&fit=crop",
   });
 
   await supabase.rpc("admin_create_store_contract", {
@@ -387,15 +479,24 @@ async function main() {
     p_payment_gateway_fee_fixed_halalas: 100,
   });
 
+  // ساعات العمل المسائية والمتأخرة (من 16:00 إلى 04:00 فجراً)
+  const lateNightHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+    day_of_week: day,
+    open_time: "16:00",
+    close_time: "04:00",
+    is_closed: false,
+  }));
+
   await upsertBranch({
     storeId: store2.id,
-    nameAr: "فرع حي الزهراء - شارع حلمي كتبي",
-    nameEn: "Al Zahra Branch - Helmi Koutbi St",
+    nameAr: "فرع حي الزهراء - شارع حلمي كتبي (دوام ليلي)",
+    nameEn: "Al Zahra Branch - Helmi Koutbi St (Late Night)",
     cityId: jeddahCityId,
     lat: 21.5835,
     lng: 39.1418,
     address: "جدة، حي الزهراء، شارع حلمي كتبي",
     baladiyaDocTypeId: baladiyaDocType?.id,
+    workingHours: lateNightHours,
   });
 
   await seedBurgerMenu(store2.id);
@@ -415,7 +516,10 @@ async function main() {
     menuPermission: "full",
     tolerancePct: 10.0,
     selfPickup: true,
+    selfPickupDiscountPercentage: 10.0,
     menuSlug: "napoli-pizza-demo",
+    logoUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&h=400&fit=crop",
   });
 
   await supabase.rpc("admin_create_store_contract", {
@@ -431,6 +535,7 @@ async function main() {
     p_payment_gateway_fee_fixed_halalas: 100,
   });
 
+  // الفرع 3A: الحمراء مفتوح
   await upsertBranch({
     storeId: store3.id,
     nameAr: "فرع حي الحمراء - شارع فلسطين",
@@ -440,6 +545,19 @@ async function main() {
     lng: 39.1552,
     address: "جدة، حي الحمراء، تقاطع شارع فلسطين مع طريق الأندلس",
     baladiyaDocTypeId: baladiyaDocType?.id,
+  });
+
+  // الفرع 3B: حي السلامة موقف مؤقتاً (paused_until لمدة 6 ساعات)
+  await upsertBranch({
+    storeId: store3.id,
+    nameAr: "فرع حي السلامة - شارع اليمامة (مغلق مؤقتاً)",
+    nameEn: "Al Salamah Branch (Temporarily Paused)",
+    cityId: jeddahCityId,
+    lat: 21.5910,
+    lng: 39.1680,
+    address: "جدة، حي السلامة، شارع اليمامة",
+    baladiyaDocTypeId: baladiyaDocType?.id,
+    pausedUntil: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
   });
 
   await seedPizzaMenu(store3.id);
@@ -459,7 +577,10 @@ async function main() {
     menuPermission: "review_required",
     tolerancePct: 5.0,
     selfPickup: true,
+    selfPickupDiscountPercentage: 5.0,
     menuSlug: "almarwah-market-demo",
+    logoUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&h=400&fit=crop",
   });
 
   await supabase.rpc("admin_create_store_contract", {
@@ -504,6 +625,8 @@ async function main() {
     tolerancePct: 5.0,
     selfPickup: true,
     menuSlug: "alnoor-pharmacy-demo",
+    logoUrl: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1576602976047-174e57a47881?w=800&h=400&fit=crop",
   });
 
   await supabase.rpc("admin_create_store_contract", {
@@ -546,6 +669,8 @@ async function main() {
     tolerancePct: 0.0,
     selfPickup: false,
     menuSlug: "albalad-bakery-demo",
+    logoUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=400&fit=crop",
   });
 
   await upsertBranch({
@@ -559,17 +684,66 @@ async function main() {
     baladiyaDocTypeId: baladiyaDocType?.id,
   });
 
+  // --- متجر 7: كافيه ومحمص الساحل المختص (ديمو) --- مقهى ومحمص مختص بزون شمال جدة
+  console.log("\n☕ تهيئة متجر 7: كافيه ومحمص الساحل المختص (ديمو) - زون شمال جدة...");
+  const store7 = await upsertStore({
+    merchantId,
+    nameAr: "كافيه ومحمص الساحل المختص (ديمو)",
+    nameEn: "Coast Specialty Coffee & Roastery (Demo)",
+    storeType: "contracted_menu",
+    operationType: "restaurant",
+    categoryId: categoryMap.get("cafe") || null,
+    cityId: jeddahCityId,
+    minOrderSar: 20,
+    defaultPrepTime: 12,
+    menuPermission: "review_required",
+    tolerancePct: 5.0,
+    selfPickup: true,
+    selfPickupDiscountPercentage: 10.0,
+    menuSlug: "coast-cafe-demo",
+    deliveryZoneId: northJeddahZoneId,
+    logoUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=120&h=120&fit=crop",
+    bannerUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=400&fit=crop",
+  });
+
+  await supabase.rpc("admin_create_store_contract", {
+    p_store_id: store7.id,
+    p_pricing_model: "percentage",
+    p_contract_percentage: 10.0,
+    p_tier1_fee_halalas: 200,
+    p_tier1_order_threshold_halalas: 2500,
+    p_tier2_fee_halalas: 500,
+    p_contract_per_customer_cap_halalas: 3000,
+    p_menu_markup_percentage: 0.0,
+    p_payment_gateway_fee_percentage: 2.5,
+    p_payment_gateway_fee_fixed_halalas: 100,
+  });
+
+  await upsertBranch({
+    storeId: store7.id,
+    nameAr: "فرع حي الشاطئ - طريق الكورنيش",
+    nameEn: "Al Shati Branch - Corniche Rd",
+    cityId: jeddahCityId,
+    lat: 21.5900,
+    lng: 39.1120,
+    address: "جدة، حي الشاطئ، طريق الكورنيش الشمالي",
+    baladiyaDocTypeId: baladiyaDocType?.id,
+  });
+
+  await seedCafeMenu(store7.id);
+
   console.log("\n=================================================");
   console.log("✅ اكتملت إضافة كافة البيانات التجريبية بنجاح تام!");
   console.log("=================================================");
   console.log("المدينة الأساسية: جدة (مغطاة بمضلع جغرافي PostGIS)");
   console.log("المتاجر التجريبية:");
-  console.log(" 1. شاورما وفلافل الساحل (ديمو) - متعاقد بمنيو (عقد نسبة 10%) - 10 أصناف غذائية");
-  console.log(" 2. برجر ومشويات الأندلس (ديمو) - متعاقد بمنيو (عقد رسوم لكل عميل) - 9 أصناف");
-  console.log(" 3. بيتزا وفطائر نابولي (ديمو) - متعاقد بمنيو (بدون خصم وزيادة 10%) - 9 أصناف");
-  console.log(" 4. تموينات وسوبرماركت المروة (ديمو) - متعاقد بمنيو (مارت) - 8 أصناف");
+  console.log(" 1. شاورما وفلافل الساحل (ديمو) - فرعين (الروضة، الزهراء)، عقد نسبة 10%");
+  console.log(" 2. برجر ومشويات الأندلس (ديمو) - فرع دوام ليلي (16:00 إلى 04:00)، رسوم عميل");
+  console.log(" 3. بيتزا وفطائر نابولي (ديمو) - فرعين أحدهما مغلق مؤقتاً (السلامة)، زيادة 10%");
+  console.log(" 4. تموينات وسوبرماركت المروة (ديمو) - نشاط مارت، أصناف مقترحة بالسلة");
   console.log(" 5. صيدلية النور (ديمو) - متعاقد كتابة فقط (بلا منيو)");
-  console.log(" 6. مخبز وتموينات البلد (ديمو) - غير متعاقد (بلا منيو)");
+  console.log(" 6. مخبز وتموينات البلد (ديمو) - غير متعاقد اطلب اللي تبي (بلا منيو)");
+  console.log(" 7. كافيه ومحمص الساحل المختص (ديمو) - زون شمال جدة، نطاق سعرات، كافيين، صوديوم عالي، خيارات إجبارية");
   console.log("\nحسابات الدخول التجريبية:");
   for (const u of DEMO_USERS) {
     console.log(` • ${u.fullName} (${u.role}): ${u.email} | كلمة المرور: ${u.password}`);
@@ -594,7 +768,11 @@ interface StoreParams {
   menuPermission: "full" | "price_tolerance" | "review_required";
   tolerancePct: number;
   selfPickup: boolean;
+  selfPickupDiscountPercentage?: number;
   menuSlug: string;
+  deliveryZoneId?: string | null;
+  logoUrl?: string;
+  bannerUrl?: string;
 }
 
 async function upsertStore(p: StoreParams) {
@@ -619,6 +797,10 @@ async function upsertStore(p: StoreParams) {
         menu_permission: p.menuPermission,
         menu_price_tolerance_percentage: p.tolerancePct,
         self_pickup_enabled: p.selfPickup,
+        self_pickup_discount_percentage: p.selfPickupDiscountPercentage ?? 0,
+        delivery_zone_id: p.deliveryZoneId ?? null,
+        logo_url: p.logoUrl ?? null,
+        banner_url: p.bannerUrl ?? null,
       })
       .eq("id", existing.id)
       .select("id")
@@ -642,7 +824,11 @@ async function upsertStore(p: StoreParams) {
       menu_permission: p.menuPermission,
       menu_price_tolerance_percentage: p.tolerancePct,
       self_pickup_enabled: p.selfPickup,
+      self_pickup_discount_percentage: p.selfPickupDiscountPercentage ?? 0,
       menu_slug: p.menuSlug,
+      delivery_zone_id: p.deliveryZoneId ?? null,
+      logo_url: p.logoUrl ?? null,
+      banner_url: p.bannerUrl ?? null,
     })
     .select("id")
     .single();
@@ -662,6 +848,8 @@ interface BranchParams {
   lng: number;
   address: string;
   baladiyaDocTypeId?: string;
+  workingHours?: Array<{ day_of_week: number; open_time: string; close_time: string; is_closed: boolean }>;
+  pausedUntil?: string | null;
 }
 
 async function upsertBranch(p: BranchParams) {
@@ -672,8 +860,8 @@ async function upsertBranch(p: BranchParams) {
     .eq("name_ar", p.nameAr)
     .maybeSingle();
 
-  // ساعات العمل النموذجية (يومياً من 10:00 صباحاً إلى 02:00 ليلاً)
-  const workingHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+  // ساعات العمل النموذجية (يومياً من 10:00 صباحاً إلى 02:00 ليلاً ما لم تُحدد خلاف ذلك)
+  const workingHours = p.workingHours || [0, 1, 2, 3, 4, 5, 6].map((day) => ({
     day_of_week: day,
     open_time: "10:00",
     close_time: "02:00",
@@ -724,13 +912,17 @@ async function upsertBranch(p: BranchParams) {
     }
   }
 
-  // الآن بعد توفر الرخصة، نفعّل الفرع بأمان
+  // الآن بعد توفر الرخصة، نفعّل الفرع ونحدث مهلة الإيقاف إن وُجدت
+  const updateBranchData: any = { is_active: true };
+  if (p.pausedUntil !== undefined) {
+    updateBranchData.paused_until = p.pausedUntil;
+  }
   await supabase
     .from("store_branches")
-    .update({ is_active: true })
+    .update(updateBranchData)
     .eq("id", id);
 
-  console.log(`  ✓ تم حفظ وتفعيل الفرع: ${p.nameAr}`);
+  console.log(`  ✓ تم حفظ وتفعيل الفرع: ${p.nameAr}${p.pausedUntil ? " (موقف مؤقتاً)" : ""}`);
   return id;
 }
 
@@ -853,6 +1045,7 @@ async function seedShawarmaMenu(storeId: string, sfdaExemptReasonId: string | nu
     priceSar: 8.0,
     prepTime: 8,
     calories: 310,
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -864,6 +1057,7 @@ async function seedShawarmaMenu(storeId: string, sfdaExemptReasonId: string | nu
     prepTime: 5,
     calories: 270,
     allergens: ["سمسم"],
+    isSuggestedInCart: true,
   });
 
   const drinkItem = await upsertMenuItem({
@@ -874,6 +1068,7 @@ async function seedShawarmaMenu(storeId: string, sfdaExemptReasonId: string | nu
     priceSar: 4.0,
     prepTime: 2,
     calories: 140,
+    isSuggestedInCart: true,
   });
   await addOptionGroup(drinkItem, {
     nameAr: "اختر نوع المشروب",
@@ -975,6 +1170,7 @@ async function seedBurgerMenu(storeId: string) {
     prepTime: 8,
     calories: 380,
     allergens: ["ألبان", "غلوتين"],
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -997,6 +1193,7 @@ async function seedBurgerMenu(storeId: string) {
     prepTime: 7,
     calories: 290,
     allergens: ["غلوتين", "ألبان"],
+    isSuggestedInCart: true,
   });
 
   // مشروبات
@@ -1009,6 +1206,7 @@ async function seedBurgerMenu(storeId: string) {
     prepTime: 6,
     calories: 460,
     allergens: ["ألبان"],
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -1085,6 +1283,7 @@ async function seedPizzaMenu(storeId: string) {
     prepTime: 12,
     calories: 410,
     allergens: ["غلوتين", "ألبان"],
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -1119,6 +1318,7 @@ async function seedPizzaMenu(storeId: string) {
     prepTime: 10,
     calories: 360,
     allergens: ["غلوتين", "ألبان"],
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -1129,6 +1329,7 @@ async function seedPizzaMenu(storeId: string) {
     priceSar: 6.0,
     prepTime: 2,
     calories: 95,
+    isSuggestedInCart: true,
   });
 }
 
@@ -1199,6 +1400,7 @@ async function seedMartMenu(storeId: string) {
     priceSar: 14.0,
     prepTime: 5,
     calories: 0,
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -1209,6 +1411,7 @@ async function seedMartMenu(storeId: string) {
     priceSar: 6.0,
     prepTime: 5,
     calories: 240,
+    isSuggestedInCart: true,
   });
 
   await upsertMenuItem({
@@ -1219,6 +1422,117 @@ async function seedMartMenu(storeId: string) {
     priceSar: 16.5,
     prepTime: 5,
     calories: 0,
+    isSuggestedInCart: true,
+  });
+}
+
+async function seedCafeMenu(storeId: string) {
+  const secCoffee = await upsertMenuSection(storeId, "القهوة المختصة والمشروبات", "Specialty Coffee & Beverages", 1);
+  const secBakery = await upsertMenuSection(storeId, "المخبوزات والساندوتشات", "Bakery & Sandwiches", 2);
+  const secSweets = await upsertMenuSection(storeId, "الحلويات والمقرمشات", "Desserts & Pastries", 3);
+
+  // 1. صنف بمجال سعرات حرارية (SFDA Calorie Range) مع 3 أحجام ومحتوى كافيين
+  const item1 = await upsertMenuItem({
+    sectionId: secCoffee,
+    nameAr: "فلات وايت بالكراميل المملح",
+    nameEn: "Salted Caramel Flat White",
+    descAr: "إسبريسو دبل شوت مع حليب مبخر غني بالرغوة المخملية وصلصة الكراميل المملح الخاصة",
+    priceSar: 16.0,
+    prepTime: 5,
+    caloriesMin: 120,
+    caloriesMax: 310,
+    caffeineMg: 135,
+    allergens: ["ألبان"],
+  });
+  await addSizes(item1, [
+    { nameAr: "صغير (Small - 6oz)", nameEn: "Small", deltaSar: 0, cal: 120, isDefault: true },
+    { nameAr: "وسط (Medium - 8oz)", nameEn: "Medium", deltaSar: 4, cal: 210 },
+    { nameAr: "كبير (Large - 12oz)", nameEn: "Large", deltaSar: 7, cal: 310 },
+  ]);
+
+  // 2. صنف مع خيارات إجبارية وعلامة صوديوم عالي (High Salt)
+  const item2 = await upsertMenuItem({
+    sectionId: secBakery,
+    nameAr: "ساندوتش حلوم مشوي مع الزعتر والزيتون",
+    nameEn: "Grilled Halloumi Sandwich with Thyme & Olives",
+    descAr: "جبن حلوم مشوي مع شرائح الطماطم والخيار ومعجون الزيتون وزيت الزيتون البكر الممتاز",
+    priceSar: 22.0,
+    prepTime: 8,
+    calories: 480,
+    isHighSalt: true,
+    allergens: ["ألبان", "غلوتين"],
+  });
+  await addOptionGroup(item2, {
+    nameAr: "نوع الخبز (إجباري)",
+    nameEn: "Bread Type (Mandatory)",
+    isRequired: true,
+    min: 1,
+    max: 1,
+    options: [
+      { nameAr: "خبز الساوردو الريفي", nameEn: "Country Sourdough", deltaSar: 0, cal: 40 },
+      { nameAr: "كرواسان زبدة فرنسي فاخر", nameEn: "French Butter Croissant", deltaSar: 3, cal: 90 },
+    ],
+  });
+  await addOptionGroup(item2, {
+    nameAr: "إضافات اختيارية",
+    nameEn: "Optional Extras",
+    isRequired: false,
+    min: 0,
+    max: 2,
+    options: [
+      { nameAr: "بيستو ريحان إضافي", nameEn: "Extra Basil Pesto", deltaSar: 3, cal: 60 },
+      { nameAr: "جرجير بري طازج", nameEn: "Fresh Wild Arugula", deltaSar: 2, cal: 10 },
+    ],
+  });
+
+  // 3. كوكيز مقترح في السلة
+  await upsertMenuItem({
+    sectionId: secSweets,
+    nameAr: "كوكيز شوكولاتة بلجيكية ثلاثية",
+    nameEn: "Triple Belgian Chocolate Cookie",
+    descAr: "كوكيز طازج مخبوز يومياً غني بقطع الشوكولاتة الداكنة والحليبية والبيضاء",
+    priceSar: 12.0,
+    prepTime: 3,
+    calories: 320,
+    isSuggestedInCart: true,
+    allergens: ["غلوتين", "ألبان", "بيض"],
+  });
+
+  // 4. مياه فوارة مقترحة في السلة
+  await upsertMenuItem({
+    sectionId: secCoffee,
+    nameAr: "مياه فوارة ناتشرال 250 مل",
+    nameEn: "Natural Sparkling Water 250ml",
+    descAr: "مياه معدنية غازية فوارة منعشة ومبردة",
+    priceSar: 7.0,
+    prepTime: 1,
+    calories: 0,
+    isSuggestedInCart: true,
+  });
+
+  // 5. كيكة عسل مقترحة في السلة
+  await upsertMenuItem({
+    sectionId: secSweets,
+    nameAr: "كيكة العسل الروسية الكلاسيكية",
+    nameEn: "Classic Russian Honey Cake",
+    descAr: "طبقات رقيقة من البسكويت المخبوز بالعسل الطبيعي مع كريمة خفيفة متوازنة",
+    priceSar: 24.0,
+    prepTime: 4,
+    calories: 380,
+    isSuggestedInCart: true,
+    allergens: ["غلوتين", "ألبان", "بيض"],
+  });
+
+  // 6. قهوة مقطرة مختصة
+  await upsertMenuItem({
+    sectionId: secCoffee,
+    nameAr: "قهوة مقطرة V60 إثيوبيا قوجي",
+    nameEn: "Ethiopia Guji V60 Drip Coffee",
+    descAr: "قهوة مختصة مقطرة بطريقة V60 تتميز بإيحاءات الخوخ والياسمين وقوام سلس ومتوازن",
+    priceSar: 19.0,
+    prepTime: 6,
+    calories: 5,
+    caffeineMg: 165,
   });
 }
 
@@ -1259,9 +1573,15 @@ interface ItemParams {
   priceSar: number;
   prepTime: number;
   calories?: number;
+  caloriesMin?: number;
+  caloriesMax?: number;
   allergens?: string[];
   isSfdaExempt?: boolean;
   sfdaReasonId?: string | null;
+  isSuggestedInCart?: boolean;
+  caffeineMg?: number | null;
+  isHighSalt?: boolean;
+  imageUrl?: string;
 }
 
 async function upsertMenuItem(p: ItemParams) {
@@ -1282,14 +1602,29 @@ async function upsertMenuItem(p: ItemParams) {
     is_available: true,
     is_published: true, // نشر فوري لاكتمال الشروط
     allergens: p.allergens || [],
+    is_suggested_in_cart: !!p.isSuggestedInCart,
+    has_caffeine: p.caffeineMg != null && p.caffeineMg > 0,
+    caffeine_mg: p.caffeineMg ?? null,
+    is_high_salt: !!p.isHighSalt,
+    image_url: p.imageUrl || null,
   };
 
   if (p.isSfdaExempt && p.sfdaReasonId) {
     payload.is_sfda_exempt = true;
     payload.sfda_exemption_reason_id = p.sfdaReasonId;
     payload.calories_value = null;
+    payload.calories_min = null;
+    payload.calories_max = null;
+  } else if (p.caloriesMin != null && p.caloriesMax != null) {
+    payload.calories_min = p.caloriesMin;
+    payload.calories_max = p.caloriesMax;
+    payload.calories_value = null;
+    payload.is_sfda_exempt = false;
+    payload.sfda_exemption_reason_id = null;
   } else {
     payload.calories_value = p.calories ?? 250;
+    payload.calories_min = null;
+    payload.calories_max = null;
     payload.is_sfda_exempt = false;
     payload.sfda_exemption_reason_id = null;
   }
