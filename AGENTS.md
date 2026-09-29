@@ -81,5 +81,6 @@ npm run dev:customer     # تشغيل تطبيق العميل (امسح رمز Q
 npm run typecheck        # فحص الأنواع
 npm run lint             # الفحص الشكلي
 npm test                 # الاختبارات
+npm run db:types         # توليد أنواع TypeScript من قاعدة بيانات Supabase
 npx supabase db push     # رفع ملفات الترحيل الجديدة لمشروع Supabase
 ```

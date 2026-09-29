@@ -11,10 +11,14 @@
     "dev:customer": "npm --workspace=apps/customer run dev",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:types": "supabase gen types typescript --linked > packages/shared/src/types/supabase/database.types.ts"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "dotenv": "^18.0.4",
     "prettier": "^3.5.3",
+    "supabase": "^2.118.0",
     "typescript": "^5.8.2",
     "vitest": "^3.0.7"
   }
