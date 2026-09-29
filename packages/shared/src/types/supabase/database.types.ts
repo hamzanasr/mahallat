@@ -39,6 +39,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          acknowledged_forfeiture: boolean
+          created_at: string
+          id: string
+          phone: string
+          reason: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_forfeiture?: boolean
+          created_at?: string
+          id?: string
+          phone: string
+          reason?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_forfeiture?: boolean
+          created_at?: string
+          id?: string
+          phone?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_invitations: {
         Row: {
           city_id: string | null
@@ -637,6 +679,30 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_rate_limits: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          ip_address: string | null
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          ip_address?: string | null
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          ip_address?: string | null
+          phone?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1167,6 +1233,39 @@ export type Database = {
           },
         ]
       }
+      user_consents: {
+        Row: {
+          consent_type: string
+          created_at: string
+          device_info: Json | null
+          id: string
+          ip_address: string | null
+          status: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          consent_type: string
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          status: string
+          user_id: string
+          version?: string
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          status?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null
@@ -1309,6 +1408,10 @@ export type Database = {
           p_store_id?: string
           p_value: Json
         }
+        Returns: Json
+      }
+      check_and_record_otp_request: {
+        Args: { p_device_id?: string; p_ip?: string; p_phone: string }
         Returns: Json
       }
       city_for_point: {

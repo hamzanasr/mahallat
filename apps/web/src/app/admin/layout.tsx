@@ -22,6 +22,7 @@ import {
   Building2,
   ClipboardCheck,
   Tags,
+  UserX,
 } from "lucide-react";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -139,6 +140,13 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       icon: Users,
       active: pathname.startsWith("/admin/customers"),
       enabled: false,
+    },
+    {
+      title: language === "ar" ? "طلبات حذف الحساب" : "Account Deletions",
+      href: "/admin/account-deletions",
+      icon: UserX,
+      active: pathname.startsWith("/admin/account-deletions"),
+      enabled: isSuperAdmin || isOperations || isSupport,
     },
     {
       title: t.admin.nav.cities,

@@ -75,4 +75,8 @@
 | `section_pharmacy_enabled` | إظهار قسم الصيدليات (مخفي افتراضياً) | `boolean` | `false` | عام، مدينة | CUS-009 |
 | `section_self_pickup_enabled` | إظهار خدمة استلم بنفسك | `boolean` | `true` | عام، مدينة | CUS-009 |
 | `section_taxi_enabled` | إظهار خدمة Taxi (قريباً) | `boolean` | `true` | عام، مدينة | CUS-009 |
+| `otp_max_requests_per_phone` | الحد الأقصى لرسائل OTP لكل رقم | `number` | `5` | عام | ADM-001 |
+| `otp_max_requests_per_device` | الحد الأقصى لرسائل OTP لكل جهاز | `number` | `10` | عام | ADM-001 |
+| `otp_rate_limit_window_minutes` | مدة نافذة حد رسائل OTP بالدقائق | `duration_minutes` | `15` | عام | ADM-001 |
+| `terms_version` | رقم النسخة الحالية للشروط وسياسة الخصوصية | `select` | `"1.0"` | عام | REG-004 |
 
