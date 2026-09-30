@@ -9,6 +9,7 @@
   "scripts": {
     "dev:web": "npm --workspace=apps/web run dev",
     "dev:customer": "npm --workspace=apps/customer run dev",
+    "dev:driver": "npm --workspace=apps/driver run dev",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "vitest run --fileParallelism=false",

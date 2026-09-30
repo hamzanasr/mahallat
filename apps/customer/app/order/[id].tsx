@@ -59,6 +59,12 @@ interface OrderDetail {
   voided_at: string | null;
   estimated_prep_time_minutes: number;
   estimated_delivery_time_minutes: number;
+  driver_id: string | null;
+  driver_assigned_at: string | null;
+  driver_at_store_at: string | null;
+  driver_picked_up_at: string | null;
+  driver_arrived_at: string | null;
+  driver_delivered_at: string | null;
   created_at: string;
 }
 
@@ -69,6 +75,7 @@ export default function OrderDetailsScreen() {
   const { user } = useCustomerAuth();
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [driverInfo, setDriverInfo] = useState<{ firstName: string; vehicleType: string } | null>(null);
   const [history, setHistory] = useState<StatusHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -112,6 +119,25 @@ export default function OrderDetailsScreen() {
       }
       setOrder(orderData as unknown as OrderDetail);
 
+      // جلب بيانات المندوب (CUS-007: الاسم الأول ونوع المركبة بدون رقم الجوال)
+      if ((orderData as any)?.driver_id) {
+        const { data: drv } = await supabase
+          .from("drivers")
+          .select("vehicle_type, profiles(full_name)")
+          .eq("id", (orderData as any).driver_id)
+          .single();
+        if (drv) {
+          const fullName = (drv as any).profiles?.full_name || "كابتن";
+          const firstName = fullName.split(" ")[0];
+          setDriverInfo({
+            firstName,
+            vehicleType: drv.vehicle_type === "motorcycle" ? (lang === "ar" ? "دراجة نارية" : "Motorcycle") : (lang === "ar" ? "سيارة" : "Car"),
+          });
+        }
+      } else {
+        setDriverInfo(null);
+      }
+
       const { data: histData, error: histErr } = await supabase
         .from("order_status_history")
         .select("*")
@@ -127,7 +153,7 @@ export default function OrderDetailsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [id]);
+  }, [id, lang]);
 
   useEffect(() => {
     fetchOrderData();
@@ -423,6 +449,26 @@ export default function OrderDetailsScreen() {
             </View>
           )}
         </View>
+
+        {/* بيانات المندوب والتوصيل (CUS-007: الاسم الأول ونوع المركبة بدون رقم الجوال) */}
+        {driverInfo && (
+          <View style={styles.card}>
+            <View style={[styles.cardHeaderRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <Ionicons name="bicycle-outline" size={20} color="#10B981" />
+              <Text style={styles.cardSectionTitle}>
+                {lang === "ar" ? "بيانات المندوب والتوصيل (CUS-007)" : "Driver & Delivery Info"}
+              </Text>
+            </View>
+            <View style={[styles.paymentRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <Text style={styles.paymentRowLabel}>{lang === "ar" ? "الكابتن:" : "Driver:"}</Text>
+              <Text style={styles.paymentRowValue}>{driverInfo.firstName}</Text>
+            </View>
+            <View style={[styles.paymentRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <Text style={styles.paymentRowLabel}>{lang === "ar" ? "نوع المركبة:" : "Vehicle:"}</Text>
+              <Text style={styles.paymentRowValue}>{driverInfo.vehicleType}</Text>
+            </View>
+          </View>
+        )}
 
         {/* تفاصيل الدفع والبطاقة (PAY-001, PAY-023) */}
         <View style={styles.card}>

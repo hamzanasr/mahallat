@@ -214,6 +214,110 @@ async function main() {
     jeddahCityId = jData?.id;
   }
 
+  // 2.1 تهيئة حسابات المناديب التجريبية (المرحلة 4: DRV-001, DRV-007, DRV-010, DRV-011, DRV-015, DRV-017)
+  console.log("\n🛵 تهيئة حسابات المناديب التجريبية...");
+  const DEMO_DRIVERS = [
+    {
+      email: "driver.ahmed@mahallat.local",
+      password: "DemoDriver123!",
+      phone: "+966551111111",
+      fullName: "أحمد الغامدي (ديمو)",
+      driverType: "saudi_freelance",
+      vehicleType: "car",
+      vehiclePlate: "أ ح م 1111",
+      vehicleModel: "تويوتا كامري 2023",
+      isVerifiedFreelance: true,
+      status: "approved",
+      level: "gold",
+      score: 95.0,
+      rating: 4.9,
+      lat: 21.578,
+      lng: 39.141,
+    },
+    {
+      email: "driver.faisal@mahallat.local",
+      password: "DemoDriver123!",
+      phone: "+966552222222",
+      fullName: "فيصل الحربي (ديمو)",
+      driverType: "saudi_freelance",
+      vehicleType: "motorcycle",
+      vehiclePlate: "ف ص ل 2222",
+      vehicleModel: "ياماها 2022",
+      isVerifiedFreelance: false,
+      status: "approved",
+      level: "silver",
+      score: 78.0,
+      rating: 4.7,
+      lat: 21.585,
+      lng: 39.135,
+    },
+  ];
+
+  for (const drv of DEMO_DRIVERS) {
+    let drvUserId: string = "";
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("phone", drv.phone)
+      .maybeSingle();
+
+    if (existingUser) {
+      drvUserId = existingUser.id;
+    } else {
+      const { data: created, error: crErr } = await supabase.auth.admin.createUser({
+        email: drv.email,
+        phone: drv.phone,
+        password: drv.password,
+        email_confirm: true,
+        phone_confirm: true,
+        user_metadata: { full_name: drv.fullName },
+      });
+      if (crErr || !created?.user) {
+        const { data: usersList } = await supabase.auth.admin.listUsers();
+        const found = usersList?.users?.find((u) => u.email === drv.email || u.phone === drv.phone);
+        if (found) drvUserId = found.id;
+        else continue;
+      } else {
+        drvUserId = created.user.id;
+      }
+    }
+
+    await supabase.from("profiles").upsert({
+      id: drvUserId,
+      full_name: drv.fullName,
+      phone: drv.phone,
+      preferred_language: "ar",
+      updated_at: new Date().toISOString(),
+    });
+
+    await supabase.from("user_roles").delete().eq("user_id", drvUserId);
+    await supabase.from("user_roles").insert({
+      user_id: drvUserId,
+      role: "driver",
+    });
+
+    await supabase.from("drivers").upsert({
+      id: drvUserId,
+      driver_type: drv.driverType as any,
+      vehicle_type: drv.vehicleType as any,
+      vehicle_plate: drv.vehiclePlate,
+      vehicle_model: drv.vehicleModel,
+      is_verified_freelance: drv.isVerifiedFreelance,
+      status: drv.status as any,
+      is_active: true,
+      uniform_acknowledged_at: new Date().toISOString(),
+      current_location: `POINT(${drv.lng} ${drv.lat})` as any,
+      location_updated_at: new Date().toISOString(),
+      level: drv.level as any,
+      performance_score: drv.score,
+      rating: drv.rating,
+      city_id: jeddahCityId,
+      updated_at: new Date().toISOString(),
+    });
+
+    console.log(`  ✓ تم تهيئة المندوب: ${drv.fullName} (${drv.vehicleType})`);
+  }
+
   // 3. تصنيفات المتاجر
   console.log("\n🏷️ تهيئة تصنيفات المتاجر...");
   const categoryMap = new Map<string, string>();

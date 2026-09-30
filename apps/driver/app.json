@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "محلات - تطبيق المندوب",
+    "slug": "mahallat-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "mahallat-driver",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "supportsRTL": true
+    }
+  }
+}

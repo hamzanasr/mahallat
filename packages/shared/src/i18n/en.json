@@ -415,6 +415,43 @@
       "back": "Back",
       "close": "Close",
       "confirm": "Confirm"
+    },
+    "driver": {
+      "appTitle": "Mahallat Driver",
+      "online": "Online & Available",
+      "offline": "Offline",
+      "goOnline": "Start Receiving Orders",
+      "goOffline": "Go Offline",
+      "uniformTitle": "Uniform Acknowledgment",
+      "uniformDesc": "I acknowledge full compliance with the approved uniform and safety standards before starting my shift (DRV-010).",
+      "uniformAcknowledge": "Acknowledge & Agree",
+      "newOffer": "New Order Offer!",
+      "earnings": "Estimated Earnings",
+      "distance": "Distance",
+      "acceptOrder": "Accept Task",
+      "rejectOrder": "Decline",
+      "secondsRemaining": "seconds remaining",
+      "activeTasks": "Current Tasks",
+      "noActiveTasks": "No active tasks right now",
+      "headingToStore": "Heading to Store",
+      "arrivedAtStore": "Arrived at Store",
+      "pickupTitle": "Order Pickup",
+      "pickupCodePlaceholder": "Enter pickup code from merchant",
+      "confirmPickup": "Confirm Pickup & Photo",
+      "headingToCustomer": "Heading to Customer",
+      "arrivedAtCustomer": "Arrived at Customer",
+      "deliveryTitle": "Order Delivery",
+      "deliveryCodePlaceholder": "Enter delivery code from customer",
+      "leaveAtDoor": "Leave at door (customer requested)",
+      "confirmDelivery": "Confirm Delivery",
+      "openNavigation": "Open Navigation (Google Maps)",
+      "geofenceWarning": "You must be within 100 meters to proceed (ORD-005)",
+      "photoRequired": "Verification photo is mandatory",
+      "emergency": "Emergency",
+      "help": "Help & Report",
+      "performance": "Performance Score",
+      "completedTrips": "Completed Trips"
     }
   }
 }
+

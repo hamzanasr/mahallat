@@ -409,6 +409,231 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_locations_log: {
+        Row: {
+          accuracy_meters: number | null
+          driver_id: string
+          heading: number | null
+          id: number
+          is_mock: boolean
+          location: unknown
+          recorded_at: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_meters?: number | null
+          driver_id: string
+          heading?: number | null
+          id?: number
+          is_mock?: boolean
+          location: unknown
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_meters?: number | null
+          driver_id?: string
+          heading?: number | null
+          id?: number
+          is_mock?: boolean
+          location?: unknown
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_locations_log_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_order_offers: {
+        Row: {
+          created_at: string
+          distance_pickup_to_delivery_km: number | null
+          distance_to_pickup_km: number | null
+          driver_id: string
+          estimated_earnings_halalas: number
+          expires_at: string
+          id: string
+          offered_at: string
+          order_id: string
+          rejection_reason: string | null
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          distance_pickup_to_delivery_km?: number | null
+          distance_to_pickup_km?: number | null
+          driver_id: string
+          estimated_earnings_halalas: number
+          expires_at: string
+          id?: string
+          offered_at?: string
+          order_id: string
+          rejection_reason?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          distance_pickup_to_delivery_km?: number | null
+          distance_to_pickup_km?: number | null
+          driver_id?: string
+          estimated_earnings_halalas?: number
+          expires_at?: string
+          id?: string
+          offered_at?: string
+          order_id?: string
+          rejection_reason?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_order_offers_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_order_offers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          active_orders_count: number
+          assigned_zone_id: string | null
+          city_id: string | null
+          created_at: string
+          current_location: unknown
+          date_of_birth: string | null
+          driver_type: string
+          freelance_doc_expires_at: string | null
+          id: string
+          insurance_expires_at: string | null
+          insurance_policy_number: string | null
+          is_active: boolean
+          is_verified_freelance: boolean
+          level: string
+          license_expires_at: string | null
+          license_number: string | null
+          location_updated_at: string | null
+          max_active_orders: number
+          mock_location_detected: boolean
+          national_id: string | null
+          performance_score: number
+          rating: number
+          status: string
+          taxi_enabled: boolean
+          uniform_acknowledged_at: string | null
+          updated_at: string
+          vehicle_model: string | null
+          vehicle_photos: Json | null
+          vehicle_plate: string | null
+          vehicle_type: string
+          vehicle_year: number | null
+        }
+        Insert: {
+          active_orders_count?: number
+          assigned_zone_id?: string | null
+          city_id?: string | null
+          created_at?: string
+          current_location?: unknown
+          date_of_birth?: string | null
+          driver_type?: string
+          freelance_doc_expires_at?: string | null
+          id: string
+          insurance_expires_at?: string | null
+          insurance_policy_number?: string | null
+          is_active?: boolean
+          is_verified_freelance?: boolean
+          level?: string
+          license_expires_at?: string | null
+          license_number?: string | null
+          location_updated_at?: string | null
+          max_active_orders?: number
+          mock_location_detected?: boolean
+          national_id?: string | null
+          performance_score?: number
+          rating?: number
+          status?: string
+          taxi_enabled?: boolean
+          uniform_acknowledged_at?: string | null
+          updated_at?: string
+          vehicle_model?: string | null
+          vehicle_photos?: Json | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+          vehicle_year?: number | null
+        }
+        Update: {
+          active_orders_count?: number
+          assigned_zone_id?: string | null
+          city_id?: string | null
+          created_at?: string
+          current_location?: unknown
+          date_of_birth?: string | null
+          driver_type?: string
+          freelance_doc_expires_at?: string | null
+          id?: string
+          insurance_expires_at?: string | null
+          insurance_policy_number?: string | null
+          is_active?: boolean
+          is_verified_freelance?: boolean
+          level?: string
+          license_expires_at?: string | null
+          license_number?: string | null
+          location_updated_at?: string | null
+          max_active_orders?: number
+          mock_location_detected?: boolean
+          national_id?: string | null
+          performance_score?: number
+          rating?: number
+          status?: string
+          taxi_enabled?: boolean
+          uniform_acknowledged_at?: string | null
+          updated_at?: string
+          vehicle_model?: string | null
+          vehicle_photos?: Json | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_assigned_zone_id_fkey"
+            columns: ["assigned_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_item_option_groups: {
         Row: {
           id: string
@@ -936,14 +1161,23 @@ export type Database = {
           delivery_address_snapshot: Json | null
           delivery_code: string | null
           delivery_fee_halalas: number
+          delivery_proof_photo_url: string | null
           delivery_type: string
           discount_halalas: number
+          driver_arrived_at: string | null
+          driver_assigned_at: string | null
+          driver_at_store_at: string | null
+          driver_delivered_at: string | null
+          driver_id: string | null
+          driver_picked_up_at: string | null
           estimated_delivery_time_minutes: number
           estimated_prep_time_minutes: number
           free_cancellation_until: string | null
           id: string
           idempotency_key: string | null
+          is_leave_at_door: boolean
           items_total_halalas: number
+          operations_override_code: string | null
           order_number: string
           order_snapshot: Json
           out_of_stock_action: string
@@ -953,6 +1187,7 @@ export type Database = {
           payment_method_id: string | null
           payment_status: string
           pickup_code: string | null
+          pickup_photo_url: string | null
           refunded_at: string | null
           service_fee_halalas: number
           status: string
@@ -979,14 +1214,23 @@ export type Database = {
           delivery_address_snapshot?: Json | null
           delivery_code?: string | null
           delivery_fee_halalas?: number
+          delivery_proof_photo_url?: string | null
           delivery_type: string
           discount_halalas?: number
+          driver_arrived_at?: string | null
+          driver_assigned_at?: string | null
+          driver_at_store_at?: string | null
+          driver_delivered_at?: string | null
+          driver_id?: string | null
+          driver_picked_up_at?: string | null
           estimated_delivery_time_minutes?: number
           estimated_prep_time_minutes?: number
           free_cancellation_until?: string | null
           id?: string
           idempotency_key?: string | null
+          is_leave_at_door?: boolean
           items_total_halalas: number
+          operations_override_code?: string | null
           order_number?: string
           order_snapshot: Json
           out_of_stock_action?: string
@@ -996,6 +1240,7 @@ export type Database = {
           payment_method_id?: string | null
           payment_status?: string
           pickup_code?: string | null
+          pickup_photo_url?: string | null
           refunded_at?: string | null
           service_fee_halalas?: number
           status?: string
@@ -1022,14 +1267,23 @@ export type Database = {
           delivery_address_snapshot?: Json | null
           delivery_code?: string | null
           delivery_fee_halalas?: number
+          delivery_proof_photo_url?: string | null
           delivery_type?: string
           discount_halalas?: number
+          driver_arrived_at?: string | null
+          driver_assigned_at?: string | null
+          driver_at_store_at?: string | null
+          driver_delivered_at?: string | null
+          driver_id?: string | null
+          driver_picked_up_at?: string | null
           estimated_delivery_time_minutes?: number
           estimated_prep_time_minutes?: number
           free_cancellation_until?: string | null
           id?: string
           idempotency_key?: string | null
+          is_leave_at_door?: boolean
           items_total_halalas?: number
+          operations_override_code?: string | null
           order_number?: string
           order_snapshot?: Json
           out_of_stock_action?: string
@@ -1039,6 +1293,7 @@ export type Database = {
           payment_method_id?: string | null
           payment_status?: string
           pickup_code?: string | null
+          pickup_photo_url?: string | null
           refunded_at?: string | null
           service_fee_halalas?: number
           status?: string
@@ -1082,6 +1337,13 @@ export type Database = {
             columns: ["delivery_address_id"]
             isOneToOne: false
             referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1899,6 +2161,10 @@ export type Database = {
         }
         Returns: Json
       }
+      auto_expire_unresponsive_customer_order: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
       calculate_customer_item_price: {
         Args: { p_base_price_halalas: number; p_store_id: string }
         Returns: number
@@ -1974,6 +2240,76 @@ export type Database = {
       delete_customer_payment_method: {
         Args: { p_payment_method_id: string }
         Returns: boolean
+      }
+      dispatch_order_to_drivers: { Args: { p_order_id: string }; Returns: Json }
+      driver_accept_order: {
+        Args: { p_driver_id: string; p_order_id: string }
+        Returns: Json
+      }
+      driver_acknowledge_uniform: {
+        Args: { p_driver_id: string }
+        Returns: Json
+      }
+      driver_arrive_at_customer: {
+        Args: {
+          p_driver_id: string
+          p_driver_lat: number
+          p_driver_lng: number
+          p_order_id: string
+        }
+        Returns: Json
+      }
+      driver_arrive_at_store: {
+        Args: {
+          p_driver_id: string
+          p_driver_lat: number
+          p_driver_lng: number
+          p_order_id: string
+        }
+        Returns: Json
+      }
+      driver_deliver_order: {
+        Args: {
+          p_delivery_code: string
+          p_driver_id: string
+          p_driver_lat?: number
+          p_driver_lng?: number
+          p_is_leave_at_door?: boolean
+          p_order_id: string
+          p_photo_url: string
+        }
+        Returns: Json
+      }
+      driver_pickup_order: {
+        Args: {
+          p_driver_id: string
+          p_driver_lat: number
+          p_driver_lng: number
+          p_order_id: string
+          p_photo_url: string
+          p_pickup_code: string
+        }
+        Returns: Json
+      }
+      driver_reject_order: {
+        Args: { p_driver_id: string; p_order_id: string; p_reason?: string }
+        Returns: Json
+      }
+      driver_toggle_active: {
+        Args: { p_active: boolean; p_driver_id: string }
+        Returns: Json
+      }
+      driver_update_location: {
+        Args: {
+          p_accuracy_meters?: number
+          p_driver_id: string
+          p_heading?: number
+          p_is_mock?: boolean
+          p_lat: number
+          p_lng: number
+          p_speed_kmh?: number
+        }
+        Returns: Json
       }
       estimate_delivery_time: {
         Args: {
@@ -2170,14 +2506,23 @@ export type Database = {
           delivery_address_snapshot: Json | null
           delivery_code: string | null
           delivery_fee_halalas: number
+          delivery_proof_photo_url: string | null
           delivery_type: string
           discount_halalas: number
+          driver_arrived_at: string | null
+          driver_assigned_at: string | null
+          driver_at_store_at: string | null
+          driver_delivered_at: string | null
+          driver_id: string | null
+          driver_picked_up_at: string | null
           estimated_delivery_time_minutes: number
           estimated_prep_time_minutes: number
           free_cancellation_until: string | null
           id: string
           idempotency_key: string | null
+          is_leave_at_door: boolean
           items_total_halalas: number
+          operations_override_code: string | null
           order_number: string
           order_snapshot: Json
           out_of_stock_action: string
@@ -2187,6 +2532,7 @@ export type Database = {
           payment_method_id: string | null
           payment_status: string
           pickup_code: string | null
+          pickup_photo_url: string | null
           refunded_at: string | null
           service_fee_halalas: number
           status: string

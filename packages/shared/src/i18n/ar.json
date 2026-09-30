@@ -415,6 +415,43 @@
       "back": "رجوع",
       "close": "إغلاق",
       "confirm": "تأكيد"
+    },
+    "driver": {
+      "appTitle": "محلات · المندوب",
+      "online": "متصل ومتاح",
+      "offline": "غير متصل",
+      "goOnline": "بدء استقبال الطلبات",
+      "goOffline": "إيقاف الاستقبال",
+      "uniformTitle": "إقرار الالتزام بالزي الموحد",
+      "uniformDesc": "أقر بالتزامي الكامل بالزي الموحد المعتمد واشتراطات السلامة قبل بدء فترة العمل (DRV-010).",
+      "uniformAcknowledge": "أقر وأوافق",
+      "newOffer": "عرض طلب جديد!",
+      "earnings": "العائد المتوقع",
+      "distance": "المسافة",
+      "acceptOrder": "قبول المهمة",
+      "rejectOrder": "رفض",
+      "secondsRemaining": "ثوانٍ متبقية",
+      "activeTasks": "المهام الحالية",
+      "noActiveTasks": "لا توجد مهام نشطة حالياً",
+      "headingToStore": "في الطريق للمتجر",
+      "arrivedAtStore": "وصلت المتجر",
+      "pickupTitle": "استلام الطلب",
+      "pickupCodePlaceholder": "أدخل كود الاستلام من التاجر",
+      "confirmPickup": "تأكيد الاستلام والصورة",
+      "headingToCustomer": "في الطريق للعميل",
+      "arrivedAtCustomer": "وصلت للعميل",
+      "deliveryTitle": "تسليم الطلب للعميل",
+      "deliveryCodePlaceholder": "أدخل كود التسليم من العميل",
+      "leaveAtDoor": "الترك عند الباب (بطلب العميل)",
+      "confirmDelivery": "تأكيد التسليم",
+      "openNavigation": "فتح الملاحة (خرائط جوجل)",
+      "geofenceWarning": "يجب أن تكون داخل نطاق 100 متر للمتابعة (ORD-005)",
+      "photoRequired": "إرفاق صورة التوثيق إلزامي",
+      "emergency": "طوارئ",
+      "help": "مساعدة وبلاغ",
+      "performance": "درجة الأداء",
+      "completedTrips": "الرحلات المكتملة"
     }
   }
 }
+
